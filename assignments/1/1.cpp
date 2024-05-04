@@ -11,6 +11,10 @@
 #include <cassert>
 #include <hpc_helpers.hpp>
 #include <cmath>
+#include <barrier>
+#include <bits/stdc++.h> 
+
+bool DEBUG = false;
 
 int random(const int &min, const int &max) {
 	static std::mt19937 generator(117);
@@ -24,18 +28,17 @@ void work(std::chrono::microseconds w) {
     while(std::chrono::steady_clock::now() < end);	
 }
 
+//old wavefront method
 void wavefront(const std::vector<int> &M, const uint64_t &N) {
 	for(uint64_t k = 0; k< N; ++k) {        // for each upper diagonal
-		
-        
         for(uint64_t i = 0; i< (N-k); ++i) {// for each elem. in the diagonal
-
 			work(std::chrono::microseconds(M[i*N+(i+k)])); 
 		}
 	}
 }
 
-void blockCyclicDataDistribution(const uint64_t lineMatrix, const uint64_t& id, 
+std::vector<uint64_t> blockCyclicDataDistribution(
+	const uint64_t lineMatrix, const uint64_t& id, 
     const uint64_t num_threads, const uint64_t chunk_size,
     const uint64_t num_tasks,
 	std::vector<int>& taskMatrix,
@@ -44,30 +47,119 @@ void blockCyclicDataDistribution(const uint64_t lineMatrix, const uint64_t& id,
     const uint64_t stride = num_threads*chunk_size;
 	const uint64_t offset = id*chunk_size;
 
+	std::vector<uint64_t> returnedVector;
+
 	for(uint64_t lower = offset; lower < num_tasks; lower += stride) {
 		const uint64_t upper = std::min(lower+chunk_size, num_tasks);
         //std::cout<<"lower: "<<lower<<" upper:"<<upper<<std::endl;
 		
 		for(uint64_t numElem = lower; numElem < upper; numElem++) {
 			//std::cout<<"row: "<<row<<std::endl;
-			
-			std::cout<<"id: "<<id<<std::endl;
-			std::cout<<"numElem: "<<numElem<<std::endl;
-			std::cout<<"line: "<<lineMatrix<<std::endl;
-			std::cout<<"M: "<<taskMatrix[lineMatrix*sizeTaskMatrix+(lineMatrix+numElem)]<<std::endl;
-			//returnVector.emplace_back(row);
+			if(DEBUG) {
+				std::cout<<"id: "<<id<<std::endl;
+				std::cout<<"numElem: "<<numElem<<std::endl;
+				std::cout<<"line: "<<lineMatrix<<std::endl;
+				std::cout<<"M: "<<taskMatrix[lineMatrix*sizeTaskMatrix+(lineMatrix+numElem)]<<std::endl;
+			}
+			returnedVector.emplace_back(taskMatrix[lineMatrix*sizeTaskMatrix+(lineMatrix+numElem)]);
 		}
-		//returnVector.emplace_back(upper-lower);
 	}
+	returnedVector.emplace_back(-1);
+
+	return returnedVector;
 }
 
 void printMatrix(std::vector<int> &M, int N, int L) {
-    for(uint64_t k = 0; k< N; ++k) {  
+    if(!DEBUG) return;
+	for(uint64_t k = 0; k< N; ++k) {  
 		for(uint64_t i = 0; i< L; ++i) { 
             std::cout << " [" << k << "," << i << "] " << M[i*N+(i+k)];
     	}
 		std::cout << std::endl;
     }
+}
+
+void printVector(std::vector<uint64_t>& currentVector) {
+	if(!DEBUG) return;
+	std::cout << "[ "; 
+  
+        // Printing vector contents 
+        for (auto element : currentVector) 
+            std::cout << element << ' '; 
+  
+        std::cout << ']'; 
+        std::cout << '\n'; 
+}  
+
+void printList(std::list<std::vector<uint64_t> >& listOfVectors) 
+{ 
+    for (auto vect : listOfVectors) { 
+        // Each element of the list is 
+        // a vector itself 
+        std::vector<uint64_t> currentVector = vect; 
+  
+        printVector(currentVector);
+    } 
+} 
+
+void job(uint64_t idThread, std::vector<uint64_t> tasks, std::barrier<std::function<void()>>& bar) {
+	if(DEBUG){
+		printf("<%ld> print tasks\n", idThread);
+		printVector(tasks);
+		printf("<%ld> #######################################\n", idThread);
+	}
+		
+	while(!tasks.empty()) {
+		if(tasks[0] == -1) {
+			tasks.erase(tasks.begin());
+			printf("<%ld> -1 task, i arrived to the barrier\n", idThread);
+			bar.arrive_and_wait();
+		} else {
+			printf("<%ld> i am working on %ld\n", idThread, tasks[0]);
+			work(std::chrono::milliseconds(tasks[0]));
+			tasks.erase(tasks.begin());
+		}
+	}
+	printf("<%ld> i finished the tasks, i left\n", idThread);
+}
+
+void newWavefront(const uint64_t &dimMatrix, const uint64_t &numThreads, 
+	const uint64_t &sizeChunck, std::vector<int>& taskMatrix, std::barrier<std::function<void()>>& myBarrier) {
+	std::list<std::vector<uint64_t>> listOfVectorTask;
+	std::vector<std::thread> threads;
+
+	for(uint64_t numDiagonal = 0; numDiagonal< dimMatrix; ++numDiagonal) {
+		for(uint64_t index = 0; index < numThreads; index++) {
+			std::vector<uint64_t> newVector = blockCyclicDataDistribution(numDiagonal, index, numThreads, sizeChunck, dimMatrix-numDiagonal, taskMatrix, dimMatrix);
+			if(listOfVectorTask.size() < numThreads) {
+				listOfVectorTask.push_back(newVector);
+			} else {
+    			std::list<std::vector<uint64_t>>::iterator it = listOfVectorTask.begin();
+				advance(it, index);
+
+				// std::vector<uint64_t> mergeVector((*it).size() + newVector.size());
+				// merge((*it).begin(), (*it).end(), newVector.begin(), newVector.end(), mergeVector.begin());
+
+				(*it).insert((*it).end(), newVector.begin(), newVector.end() ); 
+				//replace(listOfVectorTask.begin(), listOfVectorTask.end(), *it, mergeVector);
+			}
+			//std::cout<<"################# <"<<index<<">"<<std::endl;
+		}
+
+	}
+	printMatrix(taskMatrix, dimMatrix, dimMatrix);
+	//std::cout<<"##########################"<<std::endl;
+	printList(listOfVectorTask); 
+
+	for(uint64_t index = 0; index < numThreads; index++) {
+		std::list<std::vector<uint64_t>>::iterator it = listOfVectorTask.begin();
+		advance(it, index);
+		threads.emplace_back(job, index, *it, std::ref(myBarrier));
+	}
+
+	for(auto& thread: threads) {
+		thread.join();
+	}	
 }
 
 int main(int argc, char *argv[]) {
@@ -100,17 +192,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	std::barrier<std::function<void()>> myBarrier(numThreads, []() noexcept 
+     {std::cout << "barrier reached"<<std::endl;});
+
 	// allocate the matrix
 	std::vector<int> M(dimMatrix*dimMatrix, -1);
-	// double summation = N*(N+1)/2;
-	// std::cout <<"summation: "<< summation <<std::endl;
 	
-	// double sizeTaskMatrix = round(summation/numThreads);
-	
-	// std::cout <<"dimTaskMatrix: "<< sizeTaskMatrix <<std::endl;
-
-	// std::vector<int> taskMatrix(numThreads*sizeTaskMatrix, -1);
-
 	uint64_t expected_totaltime=0;
 	// init function
 	auto init=[&]() {
@@ -127,17 +214,8 @@ int main(int argc, char *argv[]) {
 
 	std::printf("Estimated compute time ~ %f (ms)\n", expected_totaltime/1000.0);
 	
-	//TIMERSTART(wavefront);
-	
-	for(uint64_t numDiagonal = 0; numDiagonal< dimMatrix; ++numDiagonal) {
-		for(uint64_t index = 0; index < numThreads; index++) {
-			blockCyclicDataDistribution(numDiagonal, index, numThreads, sizeChunck, dimMatrix-numDiagonal, M, dimMatrix);
-			std::cout<<"################# <"<<index<<">"<<std::endl;
-		}
-	}
-	printMatrix(M, dimMatrix, dimMatrix);
-	//wavefront(M, N); 
-    //TIMERSTOP(wavefront);
+	TIMERSTART(newWavefront);
+	newWavefront(dimMatrix, numThreads, sizeChunck, M, std::ref(myBarrier)); 
+    TIMERSTOP(newWavefront);
 
-    return 0;
 }
