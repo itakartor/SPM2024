@@ -14,7 +14,7 @@
 #include <barrier>
 #include <bits/stdc++.h> 
 
-bool DEBUG = false;
+bool DEBUG = true;
 
 int random(const int &min, const int &max) {
 	static std::mt19937 generator(117);
@@ -31,7 +31,7 @@ void work(std::chrono::microseconds w) {
 //old wavefront method
 void wavefront(const std::vector<int> &M, const uint64_t &N) {
 	for(uint64_t k = 0; k< N; ++k) {        // for each upper diagonal
-        for(uint64_t i = 0; i< (N-k); ++i) {// for each elem. in the diagonal
+		for(uint64_t i = 0; i< (N-k); ++i) {// for each elem. in the diagonal
 			work(std::chrono::microseconds(M[i*N+(i+k)])); 
 		}
 	}
@@ -139,14 +139,13 @@ void newWavefront(const uint64_t &dimMatrix, const uint64_t &numThreads,
 
 				// std::vector<uint64_t> mergeVector((*it).size() + newVector.size());
 				// merge((*it).begin(), (*it).end(), newVector.begin(), newVector.end(), mergeVector.begin());
-
-				(*it).insert((*it).end(), newVector.begin(), newVector.end() ); 
+				(*it).insert((*it).end(), newVector.begin(), newVector.end()); 
 				//replace(listOfVectorTask.begin(), listOfVectorTask.end(), *it, mergeVector);
 			}
 			//std::cout<<"################# <"<<index<<">"<<std::endl;
 		}
-
 	}
+
 	printMatrix(taskMatrix, dimMatrix, dimMatrix);
 	//std::cout<<"##########################"<<std::endl;
 	printList(listOfVectorTask); 
@@ -214,6 +213,10 @@ int main(int argc, char *argv[]) {
 
 	std::printf("Estimated compute time ~ %f (ms)\n", expected_totaltime/1000.0);
 	
+	TIMERSTART(wavefront);
+	wavefront(M, dimMatrix); 
+    TIMERSTOP(wavefront);
+
 	TIMERSTART(newWavefront);
 	newWavefront(dimMatrix, numThreads, sizeChunck, M, std::ref(myBarrier)); 
     TIMERSTOP(newWavefront);
