@@ -11,7 +11,6 @@
 
 using umap=std::unordered_map<std::string, uint64_t>;
 using pair=std::pair<std::string, uint64_t>;
-
 struct Comp {
 	bool operator ()(const pair& p1, const pair& p2) const {
 		return p1.second > p2.second;
@@ -32,12 +31,12 @@ void printMap(umap myMap) {
 void reduce_umaps(umap& output, umap& input)
 {
 	if(!output.empty() || !input.empty()){
-		int i = omp_get_thread_num();
-		int n = omp_get_num_threads();
-		printf("reduce_umaps %d/%d\n", i,n);
+		// int i = omp_get_thread_num();
+		// int n = omp_get_num_threads();
+		// printf("reduce_umaps %d/%d\n", i,n);
 		// printMap(output);
 		// printMap(input);
-		for (auto& X : input) {
+		for(auto& X : input) {
 			// printf("first %s\n",X.first.c_str());
 			// printf("second %ld\n", X.second);
 			
@@ -58,24 +57,25 @@ void reduce_umaps(umap& output, umap& input)
 void tokenize_line(const std::string& line, umap& UM) {
     char *tmpstr;
     char *token = strtok_r(const_cast<char*>(line.c_str()), " \r\n", &tmpstr);
+	// std::cout<<"extraworkXline: "<<extraworkXline<<std::endl;
 	
-	#pragma omp parallel num_threads(extraworkXline) shared(UM) firstprivate(token, tmpstr)
+	#pragma omp parallel num_threads(extraworkXline) firstprivate(token) shared(tmpstr)
     {	
-		int i = omp_get_thread_num();
-        int n = omp_get_num_threads();
+		// int i = omp_get_thread_num();
+        // int n = omp_get_num_threads();
         while(token) {
-			if(token)
-            	printf("hello from thread %d of %d with token %s\n", i, n, token);
-        	else
-            	printf("toke is null\n");
-            #pragma omp critical 
-            {
-                if(token) {
-                    ++UM[std::string(token)];
-                    ++total_words;
-                }
-            }
-            token = strtok_r(NULL, " \r\n", &tmpstr);
+			// if(token)
+            // 	printf("hello from thread %d of %d with token %s\n", i, n, token);
+        	// else
+            // 	printf("toke is null\n");
+            ++UM[std::string(token)];
+			
+			#pragma omp critical
+			{
+		    	++total_words;
+			}
+            
+			token = strtok_r(NULL, " \r\n", &tmpstr);
         }
     }
 
@@ -98,22 +98,104 @@ void tokenize_line(const std::string& line, umap& UM) {
     // }
 	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
 }
+std::vector<std::string> readLinesParallel(const std::string& filename) {
+    std::vector<std::string> lines;
+    std::ifstream file(filename);
+    std::string line;
+
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return lines;
+    }
+
+    // Get the number of lines in the file
+    file.seekg(0, std::ios::end);
+    size_t fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+    size_t numLines = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+    file.seekg(0, std::ios::beg);
+
+    // Reserve space for the lines
+    lines.reserve(numLines);
+
+    // Read lines in parallel
+    #pragma omp parallel
+    {
+        // #pragma omp single
+        // {
+        //     std::cout << "Reading file with " << omp_get_num_threads() << " threads." << std::endl;
+        // }
+
+        while (std::getline(file, line)) {
+            #pragma omp task
+            {
+                lines.push_back(line);
+            }
+        }
+    }
+
+    file.close();
+
+    return lines;
+}
+
+std::vector<std::string> getVectorLines(const std::string& filename) {
+	std::ifstream file(filename, std::ios_base::in);
+	std::vector<std::string> returnV;
+	if (file.is_open()) {
+		std::string line;
+		while(std::getline(file, line)) {
+			if (!line.empty()) {
+				returnV.emplace_back(line);
+			}
+		}
+	}
+	file.close();
+	return returnV;
+}
+
+void compute_fileReadParallel(const std::string& filename, umap& UM) {
+	std::vector<std::string> vectorLines;
+	#pragma omp parallel private(vectorLines)
+	{
+		vectorLines = readLinesParallel(filename);
+		//std::cout<<vectorLines.size()<<std::endl;
+		#pragma omp parallel for schedule(dynamic) firstprivate(vectorLines)
+		for (auto line : vectorLines) { // forse vanno utilizzati il numero dei thread anche qui degli extra workers
+			//printf("line %s\n", line.c_str());
+			tokenize_line(line, UM);
+		}
+	}
+	
+}
 
 void compute_file(const std::string& filename, umap& UM) {
+	std::vector<std::string> vectorLines = getVectorLines(filename);
+	//std::cout<<vectorLines.size()<<std::endl;
+	#pragma omp parallel for schedule(dynamic) firstprivate(vectorLines)
+	for (auto line : vectorLines) { // forse vanno utilizzati il numero dei thread anche qui degli extra workers
+		//printf("line %s\n", line.c_str());
+		tokenize_line(line, UM);
+	}
+}
+
+void compute_fileOld(const std::string& filename, umap& UM) {
 	std::ifstream file(filename, std::ios_base::in);
 	if (file.is_open()) {
 		std::string line;
 		std::vector<std::string> V;
         while(std::getline(file, line)) {
-			if (!line.empty()) {
-                printf("line %s\n", line.c_str());
-                tokenize_line(line, UM);
+			#pragma omp task firstprivate(line)
+			{
+				if (!line.empty()) {
+					//printf("line %s\n", line.c_str());
+					tokenize_line(line, UM);
+				}
 			}
 		}
 	} 
 	file.close();
 }
-
 int main(int argc, char *argv[]) {
 
 	auto usage_and_exit = [argv]() {
@@ -188,9 +270,9 @@ int main(int argc, char *argv[]) {
 
 	#pragma omp parallel for schedule(dynamic) reduction(umap_reduction:UM)
     for (auto f : filenames) {
-        int i = omp_get_thread_num();
-        int n = omp_get_num_threads();
-        printf("hello from thread %d of %d with filename %s\n", i, n, f.c_str());
+        // int i = omp_get_thread_num();
+        // int n = omp_get_num_threads();
+        // printf("hello from thread %d of %d with filename %s\n", i, n, f.c_str());
         compute_file(f, UM);
 	}
     // return 0;
