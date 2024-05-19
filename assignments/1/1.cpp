@@ -3,7 +3,7 @@
 //
 // compile:
 // g++ -std=c++20 -O3 -march=native -I<path-to-include> UTWavefront.cpp -o UTW
-//
+// g++ -std=c++20 -O3 -march=native -I ../../include  1.cpp -o 1 -pthread
 #include <iostream>
 #include <vector>
 #include <thread>
