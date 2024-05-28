@@ -18,7 +18,7 @@ bool showDebug = false;
 
 int random(const int &min, const int &max) {
 	static std::mt19937 generator(117);
-	std::uniform_int_distribution<int> distribution(min,max);
+	std::uniform_int_distribution<int> distribution(min, max);
 	return distribution(generator);
 };		
 
@@ -221,10 +221,11 @@ int main(int argc, char *argv[]) {
 	uint64_t dimMatrix = 512;    // default size of the matrix (NxN)
 	int min    = 0;      // default minimum time (in microseconds)
 	int max    = 1000;   // default maximum time (in microseconds)
-	uint64_t numThreads = std::thread::hardware_concurrency(); // default number of threads
-	uint64_t sizeChunck = 2; // default chunks size
+	uint64_t numThreads = 2;//std::thread::hardware_concurrency(); // default number of threads
+	uint64_t sizeChunk = 2; // default chunks size
 
-	if (argc != 1 && argc != 2 && argc != 4 && argc != 5 && argc != 6 && argc != 7) {
+	std::cout<<argc;
+	if (argc == 3) {
 		std::printf("use: %s N [min max] [num Threads] [num chunkSize] [showDebug]\n", argv[0]);
 		std::printf("     N size of the square matrix\n");
 		std::printf("     min waiting time (us)\n");
@@ -240,13 +241,13 @@ int main(int argc, char *argv[]) {
 			min = std::stol(argv[2]);
 			max = std::stol(argv[3]);
 		}
-		if(argc > 3) {
+		if(argc > 4) {
 			numThreads = std::stol(argv[4]);
 		}
-		if(argc > 4) {
-			sizeChunck = std::stol(argv[5]);
-		}
 		if(argc > 5) {
+			sizeChunk = std::stol(argv[5]);
+		}
+		if(argc > 6) {
 			int tmp;
 			try { 
 				tmp=std::stol(argv[6]);
@@ -271,8 +272,8 @@ int main(int argc, char *argv[]) {
 	// init function
 	auto init=[&]() {
 		for(uint64_t k = 0; k< dimMatrix; ++k) {  
-			for(uint64_t i = 0; i< (dimMatrix-k); ++i) {  
-				int t = random(min,max);
+			for(uint64_t i = 0; i<(dimMatrix-k); ++i) {  
+				int t = random(min, max);
 				M[i*dimMatrix+(i+k)] = t;
 				expected_totaltime +=t;				
 			}
@@ -288,7 +289,7 @@ int main(int argc, char *argv[]) {
     TIMERSTOP(wavefront);
 
 	TIMERSTART(newWavefront);
-	newWavefront(dimMatrix, numThreads, sizeChunck, M, std::ref(myBarrier)); 
+	newWavefront(dimMatrix, numThreads, sizeChunk, M, std::ref(myBarrier)); 
     TIMERSTOP(newWavefront);
 
 }
