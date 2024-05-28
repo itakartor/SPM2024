@@ -28,7 +28,7 @@ void work(std::chrono::microseconds w) {
     while(std::chrono::steady_clock::now() < end);	
 }
 
-//old wavefront method
+//sequential wavefront method
 void wavefront(const std::vector<int> &M, const uint64_t &N) {
 	for(uint64_t k = 0; k< N; ++k) {        // for each upper diagonal
 		for(uint64_t i = 0; i< (N-k); ++i) {// for each elem. in the diagonal
@@ -37,6 +37,10 @@ void wavefront(const std::vector<int> &M, const uint64_t &N) {
 	}
 }
 
+// method for split the tasks from the threads
+// it's static method for spitting the tasks if you know the total number of them
+// returns a vector of tasks for a single thread and puts -1 
+// for limit the end of the tasks of the specific diagonal
 std::vector<uint64_t> blockCyclicDataDistribution(
 	const uint64_t lineMatrix, const uint64_t& id, 
     const uint64_t num_threads, const uint64_t chunk_size,
@@ -69,6 +73,7 @@ std::vector<uint64_t> blockCyclicDataDistribution(
 	return returnedVector;
 }
 
+//utility method for print a matrix
 void printMatrix(std::vector<int> &M, int N, int L) {
     if(!showDebug) return;
 	for(uint64_t k = 0; k< N; ++k) {  
@@ -79,6 +84,7 @@ void printMatrix(std::vector<int> &M, int N, int L) {
     }
 }
 
+//utility method for print a vector
 void printVector(std::vector<uint64_t>& currentVector, uint64_t* test_sum) {
 	if(!showDebug) return;
 	std::cout << "[ "; 
@@ -95,6 +101,7 @@ void printVector(std::vector<uint64_t>& currentVector, uint64_t* test_sum) {
         std::cout << '\n'; 
 }  
 
+//utility method for print a list
 void printList(std::list<std::vector<uint64_t> >& listOfVectors) { 	
 	if(!showDebug) return;
 	uint64_t test_sum = 0;
@@ -108,9 +115,9 @@ void printList(std::list<std::vector<uint64_t> >& listOfVectors) {
 	std::cout <<"estimate time: " << test_sum << std::endl; 
 } 
 
-//use a vector and a common index for read all the task in the task vector
+//use a vector and a common index for read all the tasks in the task vector
 void jobVectorVersion(uint64_t idThread, std::vector<uint64_t> tasks, std::barrier<std::function<void()>>& bar, uint64_t numDiagonal) {
-	
+	//it's used for test the estimate time
 	uint64_t test_sum = 0;
 	if(showDebug){
 		printf("<%ld> print tasks\n", idThread);
@@ -123,6 +130,8 @@ void jobVectorVersion(uint64_t idThread, std::vector<uint64_t> tasks, std::barri
 			count++;
 			if(showDebug)
 				printf("<%ld> -1 task, i arrived to the barrier\n", idThread);
+			// when the threads arrive to the last diagonal then only one thread will work 
+			// then the other threads drop the barrier
 			if(count == (numDiagonal-1)) {
 				bar.arrive_and_drop();
 				return;
@@ -140,7 +149,8 @@ void jobVectorVersion(uint64_t idThread, std::vector<uint64_t> tasks, std::barri
 		printf("<%ld> i finished the tasks, i left\n", idThread);
 }
 
-//it's the same version of the vector but use a fifo mode
+// it's the same version of the vector but use a fifo mode
+// then read the first element then pop it
 void jobListVersion(uint64_t idThread, std::vector<uint64_t> tasks, std::barrier<std::function<void()>>& bar, uint64_t numDiagonal) {
 	uint64_t test_sum = 0;
 	if(showDebug){
@@ -165,18 +175,20 @@ void jobListVersion(uint64_t idThread, std::vector<uint64_t> tasks, std::barrier
 	printf("<%ld> i finished the tasks, i left\n", idThread);
 }
 
+// new parallel method 
 void newWavefront(const uint64_t &dimMatrix, const uint64_t &numThreads, 
 	const uint64_t &sizeChunck, std::vector<int>& taskMatrix, std::barrier<std::function<void()>>& myBarrier) {
 	std::list<std::vector<uint64_t>> listOfVectorTask;
 	std::vector<std::vector<uint64_t>> vectorOfVectorTask;
 	std::vector<std::thread> threads;
 
+	// split the task in the vecto and add the vector to the main vector with all the splitted task
 	for(uint64_t numDiagonal = 0; numDiagonal< dimMatrix; ++numDiagonal) {
 		for(uint64_t index = 0; index < numThreads; index++) {
 			std::vector<uint64_t> newVector = blockCyclicDataDistribution(numDiagonal, index, numThreads, sizeChunck, dimMatrix-numDiagonal, taskMatrix, dimMatrix);
-			if(vectorOfVectorTask.size() < numThreads) {
+			if(vectorOfVectorTask.size() < numThreads) { // add vector for the first time
 				vectorOfVectorTask.emplace_back(newVector);
-			} else {
+			} else { // merge the already vector was added to the new
 				vectorOfVectorTask[index].insert((vectorOfVectorTask[index]).end(), newVector.begin(), newVector.end());
 			}
 
@@ -208,6 +220,7 @@ void newWavefront(const uint64_t &dimMatrix, const uint64_t &numThreads,
 	// 	threads.emplace_back(job, index, *it, std::ref(myBarrier));
 	// }
 
+	// assign of the jobs to the threads
 	for(uint64_t index = 0; index < numThreads; index++) {
 		threads.emplace_back(jobVectorVersion, index, vectorOfVectorTask[index], std::ref(myBarrier), dimMatrix);
 	}
@@ -221,10 +234,9 @@ int main(int argc, char *argv[]) {
 	uint64_t dimMatrix = 512;    // default size of the matrix (NxN)
 	int min    = 0;      // default minimum time (in microseconds)
 	int max    = 1000;   // default maximum time (in microseconds)
-	uint64_t numThreads = 2;//std::thread::hardware_concurrency(); // default number of threads
+	uint64_t numThreads = std::thread::hardware_concurrency(); // default number of threads
 	uint64_t sizeChunk = 2; // default chunks size
 
-	std::cout<<argc;
 	if (argc == 3) {
 		std::printf("use: %s N [min max] [num Threads] [num chunkSize] [showDebug]\n", argv[0]);
 		std::printf("     N size of the square matrix\n");
@@ -259,6 +271,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	// init of the barrier with onComplete callback
 	std::barrier<std::function<void()>> myBarrier(numThreads, []() noexcept 
      {
 		if(showDebug)

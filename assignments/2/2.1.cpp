@@ -33,19 +33,20 @@ void printMap(umap myMap) {
     }
 }
 
-void tokenize_line2(const std::string& line, umap& UM) {
-	char *tmpstr;
-	char *token = strtok_r(const_cast<char*>(line.c_str()), " \r\n", &tmpstr);
-	while(token) {
-		++UM[std::string(token)];
-		token = strtok_r(NULL, " \r\n", &tmpstr);
+// void tokenize_lineSingleMap(const std::string& line, umap& UM) {
+// 	char *tmpstr;
+// 	char *token = strtok_r(const_cast<char*>(line.c_str()), " \r\n", &tmpstr);
+// 	while(token) {
+// 		++UM[std::string(token)];
+// 		token = strtok_r(NULL, " \r\n", &tmpstr);
 		
-		#pragma omp atomic
-		++total_words;
-	}
-	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
-}
+// 		#pragma omp atomic
+// 		++total_words;
+// 	}
+// 	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
+// }
 
+// tokenize the line and use the atomic for increase the total number of the worlds
 void tokenize_line(const std::string& line, std::vector<umap>& UM) {
 	char *tmpstr;
 	char *token = strtok_r(const_cast<char*>(line.c_str()), " \r\n", &tmpstr);
@@ -59,6 +60,9 @@ void tokenize_line(const std::string& line, std::vector<umap>& UM) {
 	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
 }
 
+// split the line of the file in some task and give it to the threads
+// each thread has a position in the vector of map for avoid the race condition
+// and get consistence of the data 
 void compute_file(const std::string& filename, std::vector<umap>& UMVector) {
 	std::ifstream file(filename, std::ios_base::in);
 
@@ -101,6 +105,7 @@ void compute_file(const std::string& filename, std::vector<umap>& UMVector) {
 	file.close();
 }
 
+// it's a function for reduce two map in only one called output
 void reduce_umaps(umap& output, umap& input)
 {
 	if(!output.empty() || !input.empty()){
@@ -113,6 +118,8 @@ void reduce_umaps(umap& output, umap& input)
 			// printf("first %s\n",X.first.c_str());
 			// printf("second %ld\n", X.second);
 			
+			// check if the key is already in the output map
+			// otherwise add it  
 			auto t = output.find(X.first);
 			if (t == output.end()) {
 				output.insert(pair{X.first, X.second});
@@ -183,6 +190,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
+	//reads all the url of the files
 	if (std::filesystem::is_regular_file(argv[1])) {
 		std::ifstream file(argv[1], std::ios_base::in);
 		if (file.is_open()) {
@@ -210,8 +218,10 @@ int main(int argc, char *argv[]) {
 
 	// used for storing results
 	std::vector<umap> vectorUM(extraworkXline);
-	umap UM;
-	// std::cout<<"num lines: " << maxNumLines << std::endl;
+	umap UM; // main map for the result 
+	
+	// use the for and the dynamic 1 scheduler for optimize the reading the files
+	// and the counting of the world
 	#pragma omp parallel for schedule(dynamic, 1) num_threads(extraworkXline) 
 	for (auto f : filenames) {
 		// int i = omp_get_thread_num();
@@ -220,6 +230,7 @@ int main(int argc, char *argv[]) {
 		compute_file(f, vectorUM);
 	}
 	
+	// reduce all the map in only one
 	for(auto& i : vectorUM) {
 		//printMap(i);
 		reduce_umaps(UM, i);
