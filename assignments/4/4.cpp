@@ -292,20 +292,22 @@ int main(int argc, char* argv[]) {
 			MPI_Isend(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD, &req);	
 		}
 		
-		std::vector<float> tempV(nkeys, 0);
+		std::vector<float>* tempV = new std::vector<float>();
+		tempV->reserve(nkeys);
 		for(int j=0; j<(numP-1); j++){ // i have to merge the vector in only one
-			MPI_Recv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			for(int i=0; i<nkeys;i++){
 				if(debug){
-					std::cout << "V[i]: " << V[i] <<" temp: "<<tempV[i] << std::endl;
+					std::cout << "V[i]: " << V[i] <<" temp: "<<(*tempV)[i] << std::endl;
 				}
 
-				V[i] += tempV[i];
+				V[i] += (*tempV)[i];
 				if(debug){
 					std::cout << "V[i]: " << V[i] << std::endl;
 				}
 			}
 		}
+		delete tempV;
 	} else { //we leave the server and enter in the nodes
 		if(debug){
 			std::cout << "hello, i am the node " << myId << std::endl;
