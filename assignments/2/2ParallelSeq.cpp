@@ -9,6 +9,9 @@
 #include <unordered_map>
 #include <algorithm>
 
+
+#include <bits/stdc++.h> 
+
 // compile: g++ -std=c++17 -O3 -march=native -fopenmp 2.1.cpp -o 2.1
 
 using umap=std::unordered_map<std::string, uint64_t>;
@@ -265,10 +268,19 @@ int main(int argc, char *argv[]) {
 	
 	// sorting in descending order
 	ranking rank(UM.begin(), UM.end());
+	float paralellTime = stop1 - start;
+	std::string parallelTimeStr = std::to_string(paralellTime);
+	// std::cout<<parallelTimeStr<<std::endl;
+	std::replace(parallelTimeStr.begin(), parallelTimeStr.end(), '.', ',');
 
 	auto stop2 = omp_get_wtime();
-	std::printf("Compute time (s) %f\nSorting time (s) %f\n",
-				stop1 - start, stop2 - stop1);
+	float paralellSortingTime = stop2 - stop1;
+	std::string paralellSortingTimeStr = std::to_string(paralellSortingTime);
+	// std::cout<<paralellSortingTimeStr<<std::endl;
+	std::replace(paralellSortingTimeStr.begin(), paralellSortingTimeStr.end(), '.', ',');
+	
+	std::printf("Compute time (s) %s\nSorting time (s) %s\n",
+				parallelTimeStr.c_str(), paralellSortingTimeStr.c_str());
 	
 	auto startSeq = omp_get_wtime();
 	umap UMSeq;
@@ -284,8 +296,15 @@ int main(int argc, char *argv[]) {
 	ranking rankSeq(UMSeq.begin(), UMSeq.end());
 
 	auto stop2Seq = omp_get_wtime();
-	std::printf("Compute time Seq (s) %f\nSorting time Seq (s) %f\n",
-				stop1Seq - startSeq, stop2Seq - stop1Seq);
+	float seqTime = stop1Seq - startSeq;
+	std::string seqTimeStr = std::to_string(seqTime);
+	std::replace(seqTimeStr.begin(), seqTimeStr.end(), '.', ',');
+
+	float seqSortingTime = stop2Seq - stop1Seq;
+	std::string seqSortingTimeStr = std::to_string(seqSortingTime);
+	std::replace(seqSortingTimeStr.begin(), seqSortingTimeStr.end(), '.', ',');
+	std::printf("Compute time Seq (s) %s\nSorting time Seq (s) %s\n",
+				seqTimeStr.c_str(), seqSortingTimeStr.c_str());
 
 	if (showresults) {
 		// show the results
