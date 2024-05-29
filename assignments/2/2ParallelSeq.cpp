@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
 	auto stop1Seq = omp_get_wtime();
 	
 	// sorting in descending order
-	ranking rank(UMSeq.begin(), UMSeq.end());
+	ranking rankSeq(UMSeq.begin(), UMSeq.end());
 
 	auto stop2Seq = omp_get_wtime();
 	std::printf("Compute time Seq (s) %f\nSorting time Seq (s) %f\n",
