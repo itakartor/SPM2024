@@ -46,6 +46,31 @@ void printMap(umap myMap) {
 // 	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
 // }
 
+void tokenize_lineSeq(const std::string& line, umap& UM) {
+	char *tmpstr;
+	char *token = strtok_r(const_cast<char*>(line.c_str()), " \r\n", &tmpstr);
+	while(token) {
+		++UM[std::string(token)];
+		token = strtok_r(NULL, " \r\n", &tmpstr);
+		++total_words;
+	}
+	//for(volatile uint64_t j{0}; j<extraworkXline; j++);
+}
+
+void compute_fileSeq(const std::string& filename, umap& UM) {
+	std::ifstream file(filename, std::ios_base::in);
+	if (file.is_open()) {
+		std::string line;
+		std::vector<std::string> V;
+		while(std::getline(file, line)) {
+			if (!line.empty()) {
+				tokenize_lineSeq(line, UM);
+			}
+		}
+	} 
+	file.close();
+}
+
 // tokenize the line and use the atomic for increase the total number of the worlds
 void tokenize_line(const std::string& line, std::vector<umap>& UM) {
 	char *tmpstr;
@@ -245,6 +270,23 @@ int main(int argc, char *argv[]) {
 	std::printf("Compute time (s) %f\nSorting time (s) %f\n",
 				stop1 - start, stop2 - stop1);
 	
+	auto startSeq = omp_get_wtime();
+	umap UMSeq;
+	for (auto f : filenames) {
+		// int i = omp_get_thread_num();
+		// int n = omp_get_num_threads();
+		// printf("file %d/%d\n", i,n);
+		compute_fileSeq(f, UMSeq);
+	}
+	auto stop1Seq = omp_get_wtime();
+	
+	// sorting in descending order
+	ranking rank(UMSeq.begin(), UMSeq.end());
+
+	auto stop2Seq = omp_get_wtime();
+	std::printf("Compute time Seq (s) %f\nSorting time Seq (s) %f\n",
+				stop1Seq - startSeq, stop2Seq - stop1Seq);
+
 	if (showresults) {
 		// show the results
 		std::cout << "Unique words " << rank.size() << "\n";
