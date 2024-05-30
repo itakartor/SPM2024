@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 	// the number of the nodes is -1 because i do not want to count the server node with the others
 	if((length%(numP-1))!=0){
 		if(!myId)
-			std::cout << "ERROR: length must be a multiple of the number of the working nodes" << std::endl;
+			std::cout << "ERROR: length must be a multiple of the number ("<<numP-1<<") of the working nodes" << std::endl;
 		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
 
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
 			// i want to receive the pairs from working nodes for:
 			// - update the maps
 			// - check the conditions, then updates the map and reset the map 
-			MPI_Recv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, &req);
 
 			key1 = k.key1;
 			key2 = k.key2;
@@ -293,21 +293,26 @@ int main(int argc, char* argv[]) {
 		}
 		
 		std::vector<float>* tempV = new std::vector<float>();
+		std::vector<std::vector<float>> VV;
 		tempV->reserve(nkeys);
 		for(int j=0; j<(numP-1); j++){ // i have to merge the vector in only one
-			MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			//MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Irecv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
+			VV.emplace_back((*tempV));
+		}
+		delete tempV;
+		std::cout<<VV.size()<<std::endl;
+		std::cout<<VV[0].size()<<std::endl;
+		for(int j=0; j<(numP-1); j++) {
 			for(int i=0; i<nkeys;i++){
-				if(debug){
-					std::cout << "V[i]: " << V[i] <<" temp: "<<(*tempV)[i] << std::endl;
-				}
 
-				V[i] += (*tempV)[i];
+				V[i] += (VV[j])[i];
 				if(debug){
 					std::cout << "V[i]: " << V[i] << std::endl;
 				}
 			}
 		}
-		delete tempV;
+		
 	} else { //we leave the server and enter in the nodes
 		if(debug){
 			std::cout << "hello, i am the node " << myId << std::endl;
@@ -317,7 +322,7 @@ int main(int argc, char* argv[]) {
 			if(debug){
 				std::cout << "hello, i am the node " << myId << " and i am waiting to receive a message" << std::endl;
 			}
-			MPI_Recv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &req);
 			if(debug){
 				printf("hello, i am the node %d and i have received the values: %f, %f, %f, %f", myId, c.key1, c.key2, c.m_1, c.m_2);
 			}
