@@ -1,17 +1,16 @@
 // ASSIGNMENT 3
 
-//$ g++ -I ./fastflow -DNO_DEFAULT_MAPPING  ff2_wordcount.cpp -o ff
+//$ g++ -I ./fastflow -DNO_DEFAULT_MAPPING  3.cpp -o 3
 
 // ----------------------
 //
-// STRUCTURE:				(files)  (lines)
-//	 					|	Source-->Splitter -->Tokenizer--> |	     
-//          		    |         			 	  			  |  --> Counter --> | Sink           
-//	filelist.txt -->	|	Source-->Splitter -->Tokenizer--> |		                     (map_reduce)	
-//                      | 					 	  			  |	 --> Counter --> | Sink
-//   					|	Source-->Splitter -->Tokenizer--> |
+// STRUCTURE:				(files)  (lines) AllToAll
+//	 					|	Reader --> Tokenizer --> |   
+//          		    |         			 	  	 |		             
+//	filelist.txt -->	|	Reader --> Tokenizer --> |	 reducer in master node                    	
+//                      | 					 	  	 |	(map_reduce)	  
+//   					|	Reader --> Tokenizer --> |
 //  
-//     /<------------------------------------ pipeline ------------------------------------->/
 //	
 // ----------------------
 
@@ -46,17 +45,11 @@ struct Comp {
 using ranking=std::multiset<pair, Comp>;
 
 // ------ globals --------
-uint64_t total_words{0};
 volatile uint64_t extraworkXline{0};
+volatile uint64_t num_lines{0};
 // ----------------------
 
-
-//FARM: from filelist.txt to open all files and distribute them among workers
-//input:vector of strings		output:#files
-
-//start: filenames.txt --> suddiviso per #nodi (blocchi distribuiti su workers)
-//altra idea: dynamic(1,) ma da studiare
-
+//struct of the readers that takes the its file list as parameter and the max num lines to sent to the tokenizers nodes 
 struct File_reader: ff_monode_t<std::vector<std::string>>{ 
 	
 	const std::vector<std::string> filenames;
@@ -71,10 +64,10 @@ struct File_reader: ff_monode_t<std::vector<std::string>>{
 			
 			for(uint64_t index = 0 ; index<numFiles;index++){
 				// std::cout << "indice filename: "<<filenames[index] << std::endl;
-				std::ifstream file(filenames[index], std::ios_base::in); //legge un file alla volta corrispondente all'id del worker
+				std::ifstream file(filenames[index], std::ios_base::in);
 				if (file.is_open()) { //check filename aperto
-					std::string line; //lettura
-					std::vector<std::string> *V; //crea un vettore di storage per le linee del file
+					std::string line;
+					std::vector<std::string> *V;
 					
 					while(!file.eof()){
 						V = new std::vector<std::string> ();
@@ -86,9 +79,7 @@ struct File_reader: ff_monode_t<std::vector<std::string>>{
 								count++;
 							}
 						}
-					// for(auto v = V->begin(); v != V->end(); v++){
-					// 	std::cout << v->c_str() << std::endl; //debug
-					// }
+
 						ff_send_out(V); 
 					}
 					file.close(); 
@@ -100,16 +91,16 @@ struct File_reader: ff_monode_t<std::vector<std::string>>{
 	}
 };
 
-//NODE: from lines of a text file to all the tokenized words
-//left workers:#lines		right workers:#words per line
+// NODE: from lines of a text file to all the tokenized words
+// left workers:#lines		right workers:counts the words
+// struct of the tokenizers that takes the its line as parameter and counts and save occurency the worlds in the local umap 
 struct Word_tokenizer: ff_node_t<std::vector<std::string>, umap>{ 
 
 	umap UM;
+	uint64_t loc_total_words{0};
 
-	// Word_tokenizer(umap UM_) : UM(UM_) {}
 	Word_tokenizer() {}
 
-	// std::vector<std::string>* 
 	umap*	svc(std::vector<std::string> *lines) {
 
 		// std::cout << (*lines).size() <<std::endl;
@@ -123,7 +114,7 @@ struct Word_tokenizer: ff_node_t<std::vector<std::string>, umap>{
 				// std::cout << token << std::endl;
 				UM[std::string(token)]++;
 				token = strtok_r(NULL, " \r\n", &tmpstr);
-				total_words++;
+				loc_total_words++;
 			}
 		}	
 		// ff_send_out(UM);
@@ -132,15 +123,7 @@ struct Word_tokenizer: ff_node_t<std::vector<std::string>, umap>{
 	}
 };
 
-// //map-reduce: count words' occurences and map them 
-// 	struct Sink: ff_node_t<umap> {  
-//     umap *svc(umap *UM) {
-//         std::cout << UM << std::endl; //
-//         delete UM;
-//         return GO_ON; 
-//     }
-// }; 
-
+// it's a function for reduce two map in only one called output
 void reduce_umaps(umap& output, umap& input)
 {
 	if(!output.empty() || !input.empty()){
@@ -155,8 +138,11 @@ void reduce_umaps(umap& output, umap& input)
 	}
 }
 
+// method for split the tasks from the threads
+// it's static method for spitting the tasks if you know the total number of them
+// returns a vector of tasks for a single thread and puts -1 
+// for limit the end of the tasks of the specific diagonal
 std::vector<std::string> blockCyclicDataDistribution(
-	// const uint64_t lineMatrix, 
 	const uint64_t id, 
     const uint64_t num_threads, //#worker tot
 	const uint64_t chunk_size,
@@ -173,12 +159,6 @@ std::vector<std::string> blockCyclicDataDistribution(
         //std::cout<<"lower: "<<lower<<" upper:"<<upper<<std::endl;
 		
 		for(uint64_t numElem = lower; numElem < upper; numElem++) {
-			// //std::cout<<"row: "<<row<<std::endl;
-			// if(true) {
-			// 	std::cout<<"id: "<<id<<std::endl;
-			// 	std::cout<<"numElem: "<<numElem<<std::endl;
-			// 	std::cout<<"M: "<<fileVector[numElem]<<std::endl;
-			// }
 			returnedVector.emplace_back(fileVector[numElem]);
 		}
 	}
@@ -193,20 +173,21 @@ std::vector<std::string> blockCyclicDataDistribution(
 int main(int argc, char *argv[]) {
 
 	auto usage_and_exit = [argv]() {
-		std::printf("use: %s filelist.txt [extraworkXline] [topk] [showresults]\n", argv[0]);
+		std::printf("use: %s filelist.txt [extraworkXline] [numlines] [topk] [showresults]\n", argv[0]);
 		std::printf("     filelist.txt contains one txt filename per line\n");
 		std::printf("     extraworkXline is the extra work done for each line, it is an integer value whose default is 0\n");
 		std::printf("     topk is an integer number, its default value is 10 (top 10 words)\n");
 		std::printf("     showresults is 0 or 1, if 1 the output is shown on the standard output\n\n");
 		exit(-1);
 	};
-
+	
+	uint64_t num_cores = ff_numCores();
 	std::vector<std::string> filenames;
 	size_t topk = 10;
 	bool showresults=false;
 
 
-	if (argc < 2 || argc > 5) {
+	if (argc < 2 || argc > 6) {
 		usage_and_exit();
 	}
 
@@ -217,25 +198,32 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 		if (argc > 3) {
-			try { topk=std::stoul(argv[3]);
+			try {num_lines=std::stoul(argv[3]);
 			} catch(std::invalid_argument const& ex) {
 				std::printf("%s is an invalid number (%s)\n", argv[3], ex.what());
 				return -1;
-			}
-			if (topk==0) {
-				std::printf("%s must be a positive integer\n", argv[3]);
+		}
+		if (argc > 4) {
+			try { topk=std::stoul(argv[4]);
+			} catch(std::invalid_argument const& ex) {
+				std::printf("%s is an invalid number (%s)\n", argv[4], ex.what());
 				return -1;
 			}
-			if (argc == 5) {
+			if (topk==0) {
+				std::printf("%s must be a positive integer\n", argv[4]);
+				return -1;
+			}
+			if (argc == 6) {
 				int tmp;
-				try { tmp=std::stol(argv[4]);
+				try { tmp=std::stol(argv[5]);
 				} catch(std::invalid_argument const& ex) {
-					std::printf("%s is an invalid number (%s)\n", argv[4], ex.what());
+					std::printf("%s is an invalid number (%s)\n", argv[5], ex.what());
 					return -1;
 				}
 				if (tmp == 1) showresults = true;
 			}
 		}
+	}
 	}
 	
 	if (std::filesystem::is_regular_file(argv[1])) {
@@ -259,77 +247,43 @@ int main(int argc, char *argv[]) {
 		usage_and_exit();
 	}
 
-	// used for storing results
-	umap UM;
-
-	//temp num_lines (input value?)
-	uint64_t num_lines=5;
 	// start the time
 	ffTime(START_TIME);
-	// auto start=ffTime(GET_TIME);
-
-	//call the pipeline that does all that
-	// ff_Pipe pipe(File_reader, Word_tokenizer); //, Word_counter);
-	// if (pipe.run_and_wait_end()<0) {
-    //     error("running pipeMain\n");
-    //     return -1;
-    // }
-
-
-	// ff_pipeline* main_pipe = new ff_pipeline(false, qlen, qlen, true);
-        
-    //     main_pipe->add_stage(new File_reader(filenames, num_lines, extraworkXline), true);
-    //     main_pipe->add_stage(new Word_tokenizer(UM), true);
-    //     L.push_back(main_pipe);
-
-	// if ((*main_pipe).run_and_wait_end()<0) {
-    //     error("running pipeMain\n");
-    //     return -1;
-    // }
-
-	uint64_t num_cores = ff_numCores();
-	//extraworkXline = std::min(extraworkXline, filenames.size());
 
 	ff_a2a a2a;
 	std::vector<ff_node*> left_w;
-    std::vector<ff_node*> right_w; //castare all'originale (Tokenizer*)(right_w[3]) -> umap per accedere all'umap
+    std::vector<ff_node*> right_w;
 
 	// std::cout << filenames.size() << std::endl;
 	uint64_t chunks=10;
-	for (uint64_t i = 0; i < 1; i++){ //extrawwhefso al posto di 1
-		// auto files_dist=
+	for (uint64_t i = 0; i < extraworkXline; i++){
 		// std::cout << "File_dist: " << files_dist.size() <<std::endl;
-		//blockCyclicDataDistribution(i, extraworkXline, chunks, filenames.size(), filenames);
 		left_w.push_back(new File_reader(blockCyclicDataDistribution(i, extraworkXline, chunks, filenames.size(), filenames), num_lines));
 	}
 		
 
-	for (uint64_t i = 0; i < 1; i++) //num_cores al posto di 1
+	for (uint64_t i = 0; i < num_cores; i++) {
 		right_w.push_back(new Word_tokenizer());
+	}
 
     a2a.add_firstset(left_w, 1);
     a2a.add_secondset(right_w);
-
-
-	// Sink      sink; //NON SERVE
-        
-    // ff_Pipe<> pipe(a2a, sink);
-        
-    // if (pipe.run_and_wait_end()<0) {
-    //     error("running error\n");
-    //     return -1;
-    // }
-    
     
     if (a2a.run_and_wait_end() < 0) {
 		error("running a2a\n");
 		return -1;
     }
 
+	// defined umap and total words variable
 	umap UM_def = ((Word_tokenizer*) right_w[0])->UM;
+	uint64_t total_words_main = ((Word_tokenizer*) right_w[0])->loc_total_words;
 
-	for(uint64_t i=1; i<right_w.size();i++)
+	// reduce the results in only two main variable
+	for(uint64_t i=1; i<right_w.size();i++){
 		reduce_umaps(UM_def, (((Word_tokenizer*) right_w[i])->UM));
+		total_words_main += ((Word_tokenizer*) right_w[i])->loc_total_words;
+	}
+	
 
 	
 	ffTime(STOP_TIME);
@@ -341,13 +295,12 @@ int main(int argc, char *argv[]) {
 	ffTime(STOP_TIME);
 	auto stop2 =  ffTime(GET_TIME)/1000;
 	
-	std::printf("Compute time (s) %f\nSorting time (s) %f\n",
-				stop1, stop2);
+	std::printf("Compute time (s) %f\nSorting time (s) %f\n", stop1, stop2 - stop1);
 	
 	if (showresults) {
 		// show the results
 		std::cout << "Unique words " << rank.size() << "\n";
-		std::cout << "Total words  " << total_words << "\n";
+		std::cout << "Total words  " << total_words_main << "\n";
 		std::cout << "Top " << topk << " words:\n";
 		auto top = rank.begin();
 		for (size_t i=0; i < std::clamp(topk, 1ul, rank.size()); ++i)
