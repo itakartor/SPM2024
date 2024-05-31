@@ -146,7 +146,9 @@ int main(int argc, char* argv[]) {
 	keypair k;
 	computation c;
 
-	MPI_Request req;
+	//MPI_Request req;
+	MPI_Request rq_send, rq_recv;
+	MPI_Status status;
 
 	double start = MPI_Wtime();
 
@@ -171,7 +173,7 @@ int main(int argc, char* argv[]) {
 			k.key1 = key1;
 			k.key2 = key2;
 
-			MPI_Isend(&k, 1, keysType, 0, KEY_GENERATOR, MPI_COMM_WORLD, &req);
+			MPI_Isend(&k, 1, keysType, 0, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
 			if(debug){
 				std::cout << "process number: " << myId << "\t keys: " << k.key1 << k.key2 << "\t i= " << i << std::endl;
 			}
@@ -184,7 +186,8 @@ int main(int argc, char* argv[]) {
 			// i want to receive the pairs from working nodes for:
 			// - update the maps
 			// - check the conditions, then updates the map and reset the map 
-			MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, &req);
+			MPI_Recv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, &rq_recv);
 
 			key1 = k.key1;
 			key2 = k.key2;
@@ -217,6 +220,7 @@ int main(int argc, char* argv[]) {
 				}
 			}
 			if (resetkey1) {
+				// MPI_Wait(&rq_recv, &status);
 				// updating the map[key1] initial value before restarting
 				// the computation
 				auto _r1 = static_cast<unsigned long>(r1) % SIZE;
@@ -224,12 +228,15 @@ int main(int argc, char* argv[]) {
 				resetkey1 = false;
 			}
 			if (resetkey2) {
+				// MPI_Wait(&rq_recv, &status);
 				// updating the map[key2] initial value before restarting
 				// the computation
 				auto _r2 = static_cast<unsigned long>(r2) % SIZE;
 				map[key2] = (_r2>(SIZE/2)) ? 0 : _r2;
 				resetkey2 = false;
 			}
+
+			// MPI_Wait(&rq_recv, &status);
 		} 
 		if(debug){
 			std::cout << "END key sharing and compute" << std::endl;
@@ -262,7 +269,7 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c1: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &req);
+					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 					++roundrobin;
 
 					if(roundrobin>(numP-1)){
@@ -278,7 +285,7 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c2: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &req);
+					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 					++roundrobin;
 				}
 			}
@@ -289,29 +296,55 @@ int main(int argc, char* argv[]) {
 			if(debug){
 				std::cout << "i am a working node " << myId << " and i am sending " << c.key1 << " to " << g << std::endl;
 			}
-			MPI_Isend(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD, &req);	
+			MPI_Isend(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);	
 		}
 		
-		std::vector<float>* tempV = new std::vector<float>();
-		std::vector<std::vector<float>> VV;
-		tempV->reserve(nkeys);
-		for(int j=0; j<(numP-1); j++){ // i have to merge the vector in only one
-			//MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Irecv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
-			VV.emplace_back((*tempV));
+		std::vector<float> tempV(nkeys, 0);
+		std::vector<std::vector<float>> tempVV;
+		for(int j=0; j<(numP-1); j++){
+			// MPI_Recv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Irecv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &rq_recv);
+			tempVV.emplace_back(tempV);
+			MPI_Wait(&rq_recv, &status);
 		}
-		delete tempV;
-		std::cout<<VV.size()<<std::endl;
-		std::cout<<VV[0].size()<<std::endl;
-		for(int j=0; j<(numP-1); j++) {
-			for(int i=0; i<nkeys;i++){
 
-				V[i] += (VV[j])[i];
+		for(int j=0; j<(numP-1); j++) { // i have to merge the vector in only one
+			// MPI_Irecv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
+			// MPI_Recv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			for(int i=0; i<nkeys;i++){
+				if(debug){
+					std::cout << "V[i]: " << V[i] <<" temp: "<<tempV[i] << std::endl;
+				}
+				if(tempVV[j].size() > 0){
+					V[i] += (tempVV[j])[i];
+				}
+				//tempV[i];
 				if(debug){
 					std::cout << "V[i]: " << V[i] << std::endl;
 				}
 			}
 		}
+
+		// std::vector<float>* tempV = new std::vector<float>();
+		// std::vector<std::vector<float>> VV;
+		// tempV->reserve(nkeys);
+		// for(int j=0; j<(numP-1); j++){ // i have to merge the vector in only one
+		// 	MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		// 	// MPI_Irecv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
+		// 	VV.emplace_back((*tempV));
+		// }
+		// delete tempV;
+		// // std::cout<<VV.size()<<std::endl;
+		// // std::cout<<VV[0].size()<<std::endl;
+		// for(int j=0; j<(numP-1); j++) {
+		// 	for(int i=0; i<nkeys;i++){
+
+		// 		V[i] += (VV[j])[i];
+		// 		if(debug){
+		// 			std::cout << "V[i]: " << V[i] << std::endl;
+		// 		}
+		// 	}
+		// }
 		
 	} else { //we leave the server and enter in the nodes
 		if(debug){
@@ -322,7 +355,9 @@ int main(int argc, char* argv[]) {
 			if(debug){
 				std::cout << "hello, i am the node " << myId << " and i am waiting to receive a message" << std::endl;
 			}
-			MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &req);
+			MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
+			// MPI_Recv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Wait(&rq_recv, &status);
 			if(debug){
 				printf("hello, i am the node %d and i have received the values: %f, %f, %f, %f", myId, c.key1, c.key2, c.m_1, c.m_2);
 			}
@@ -342,7 +377,7 @@ int main(int argc, char* argv[]) {
 		if(debug){
 			std::cout << "hello, i am the node " << myId << " and i am sending to V" << std::endl;
 		}
-		MPI_Isend(V.data(), V.size(), MPI_FLOAT, 0, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
+		MPI_Isend(V.data(), V.size(), MPI_FLOAT, 0, SEND_VECTOR_V, MPI_COMM_WORLD, &rq_send);
 		
 		if(debug){
 			for(int h=0; h<nkeys; h++){
