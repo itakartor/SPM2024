@@ -34,7 +34,8 @@ struct keypair{
 
 //the struct used for send information to nodes for run the compute method
 struct computation{
-	float m_1, m_2, key1, key2;
+	float m_1, m_2;
+	long key1, key2;
 };
 
 long random(const int &min, const int &max) {
@@ -116,7 +117,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::vector<float> V(nkeys, 0);
-
+	std::vector<keypair> queueKeys;
 	// bool resetkey1=false;
 	// bool resetkey2=false;
 
@@ -133,22 +134,21 @@ int main(int argc, char* argv[]) {
 	MPI_Type_commit(&keysType);
 
 	//COMP DATATYPE
-	int blockLengths_c[1] = {4};
+	int blockLengths_c[2] = {2,2};
 	MPI_Aint lb_c, extent_c;
 	MPI_Type_get_extent(MPI_FLOAT, &lb_c, &extent_c); 
 	MPI_Aint disp_c[2] = {0, 2*extent_c};
-	MPI_Datatype types_c[1] = {MPI_FLOAT}; 
+	MPI_Datatype types_c[2] = {MPI_FLOAT, MPI_LONG}; 
 
 	// Create the datatype for the parameters
 	MPI_Datatype compType;
-	MPI_Type_create_struct(1, blockLengths_c, disp_c, types_c, &compType);
+	MPI_Type_create_struct(2, blockLengths_c, disp_c, types_c, &compType);
 	MPI_Type_commit(&compType);
 
-	keypair k;
 	computation c;
 
 	//MPI_Request req;
-	MPI_Request rq_send, rq_recv;
+	MPI_Request rq_send;// rq_recv;
 	//MPI_Status status;
 
 	double start = MPI_Wtime();
@@ -161,24 +161,9 @@ int main(int argc, char* argv[]) {
 			std::cout << "ERROR: length must be a multiple of the number ("<<numP-1<<") of the working nodes" << std::endl;
 		MPI_Abort(MPI_COMM_WORLD, -1);
 	}
-
-	// int chunkSize=length/(numP-1);
 	
-	if(myId) { // i am a working node
-		// for(int i=0;i<chunkSize; ++i) {
-		// 	key1 = random(0, nkeys-1);  // value in [0,nkeys[
-		// 	key2 = random(0, nkeys-1);  // value in [0,nkeys[
-		// 	if (key1 == key2) // only distinct values in the pair
-		// 		key1 = (key1+1) % nkeys; 
-
-		// 	k.key1 = key1;
-		// 	k.key2 = key2;
-
-		// 	MPI_Isend(&k, 1, keysType, 0, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
-		// 	if(debug){
-		// 		std::cout << "process number: " << myId << "\t keys: " << k.key1 << k.key2 << "\t i= " << i << std::endl;
-		// 	}
-		// }
+	// first section
+	if(myId) { // i am a working node1
 
 		bool check = true;
 		while(check){
@@ -187,9 +172,8 @@ int main(int argc, char* argv[]) {
 			// }
 			//MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
 			MPI_Recv(&c, 1, compType, 0, KEY_GENERATOR, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			// MPI_Wait(&rq_recv, &status);
 			if(debug && (c.m_1 != 0 || c.m_2 != 0)){
-				printf("hello, i am the node %d and i have received the values: %f, %f, %f, %f\n", myId, c.key1, c.key2, c.m_1, c.m_2);
+				printf("hello, i am the node %d and i have received the values: %ld, %ld, %f, %f\n", myId, c.key1, c.key2, c.m_1, c.m_2);
 			}
 			
 			if(c.key1 == -1) {
@@ -201,10 +185,12 @@ int main(int argc, char* argv[]) {
 
 				auto r = compute(c.m_1, c.m_2, c.key1, c.key2);
 				V[c.key1] += r;
-				k.key1 = r;
-				k.key2 = c.key1;
-				MPI_Send(&k, 1, keysType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
-				
+				c.m_1 = r;
+				c.key1 = c.key1;
+				//MPI_Send(&k, 1, keysType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
+				printf("hello, i am the node %d and i am computing : %f, %ld \n", myId, c.m_1, c.key1);
+				MPI_Isend(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
+
 				if(debug){
 					std::cout << "V[key1] " << V[c.key1] << " with key: " << c.key1 << "\t r: "<< r << std::endl;	
 				}
@@ -222,75 +208,63 @@ int main(int argc, char* argv[]) {
 	} else { // i am the server
 		int roundrobin = 1;
 		int disabledKeysNumber = 0;
-		
-		for(int i=0; i<length; ++i) {
+		keypair tmpKey;
+		keypair tmpKey2;
+		int i = 0;
+		while(i<length || disabledKeysNumber > 0 || queueKeys.size() > 0) {
+			++i;
 			if(roundrobin>(numP-1)){
 				roundrobin = 1; 
 				if(debug){
 					std::cout << "roundrobin resettato a 1" << std::endl;
 				}
 			}
+
 			// std::cout<< "disabledKeys sono più di 1" << std::endl;
-			// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
-			// if(disabledKeysNumber > 0 && k.key1 != 0 && k.key2 != 0) {
-			// 	printf("hello, i am the node server and i have received the values: %ld, %ld \n", k.key1, k.key2);
-			// 	// k.key1 //result
-			// 	// k.key2 //key to reset
-			// 	--disabledKeysNumber;
-			// 	auto _r1 = static_cast<unsigned long>(k.key1) % SIZE;
-			// 	map[k.key2] = (_r1>(SIZE/2)) ? 0 : _r1;
-			// }
-			while (disabledKeysNumber > 0) {
-				std::cout<< "disabledKeys sono più di 1" << std::endl;
-				MPI_Recv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				printf("hello, i am the node server and i have received the values: %ld, %ld \n", k.key1, k.key2);
-				// k.key1 //result
-				// k.key2 //key to reset
+			
+			if(disabledKeysNumber > 0) {
+				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
+				printf("hello, i am the node server and i have received the values: %f, %ld \n", c.m_1, c.key1);
+				// c.m_1 //result
+				// c.key1 //key to reset
 				--disabledKeysNumber;
-				auto _r1 = static_cast<unsigned long>(k.key1) % SIZE;
-				map[k.key2] = (_r1>(SIZE/2)) ? 0 : _r1;
+				auto _r1 = static_cast<unsigned long>(c.m_1) % SIZE;
+				map[c.key1] = (_r1>(SIZE/2)) ? 0 : _r1;
 			}
 
-			key1 = random(0, nkeys-1);  // value in [0,nkeys[
-			key2 = random(0, nkeys-1);  // value in [0,nkeys[
-			if (key1 == key2) // only distinct values in the pair
-				key1 = (key1+1) % nkeys; 
-			// i want to receive the pairs from working nodes for:
-			// - update the maps
-			// - check the conditions, then updates the map and reset the map 
-			// MPI_Recv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, KEY_GENERATOR, MPI_COMM_WORLD, &rq_recv);
+			if(i<length){
+				
+				key1 = random(0, nkeys-1);  // value in [0,nkeys[
+				key2 = random(0, nkeys-1);  // value in [0,nkeys[
+				if (key1 == key2) // only distinct values in the pair
+					key1 = (key1+1) % nkeys;
 
-			// key1 = k.key1;
-			// key2 = k.key2;
-			// if(debug){
-			// 	std::cout << "Received keys: " << key1 << key2 << std::endl;
-			// }
-			map[key1]++;  // count the number of key1 keys
-			map[key2]++;  // count the number of key2 keys
+				
+				tmpKey.key1 = key1;
+				tmpKey.key2 = key2;
 
+				queueKeys.emplace_back(tmpKey);
+				
+				// printf("hello, i am the node server and i am generating: %ld, %ld last elem: %ld \n", key1, key2, (*(queueKeys.end())).key1);
+			}
+			if(disabledKeysNumber == 0 && queueKeys.size() > 0) {
+				tmpKey2 = *(queueKeys.begin());
 
-			// float r1;
-			// float r2;
-			// if key1 reaches the SIZE limit, then do the computation and then
-			// reset the counter ....
-			// if(disabledKeysNumber == 0){
-				if (map[key1] == SIZE && map[key2] != 0) {
-					c.m_1 = map[key1];
-					c.m_2 = map[key2];
-					c.key1 = key1;
-					c.key2 = key2;
+				queueKeys.erase(queueKeys.begin());
+				map[tmpKey2.key1]++;  // count the number of key1 keys
+				map[tmpKey2.key2]++;  // count the number of key2 keys
+
+				if (map[tmpKey2.key1] == SIZE && map[tmpKey2.key2] != 0) {
+					c.m_1 = map[tmpKey2.key1];
+					c.m_2 = map[tmpKey2.key2];
+					c.key1 = tmpKey2.key1;
+					c.key2 = tmpKey2.key2;
 					++disabledKeysNumber;
-					printf("hello, i am the node server and i have sent the values: %f, %f, %f, %f, round robin: %d \n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
+					printf("hello, i am the node server and i have sent the values: %ld, %ld, %f, %f, round robin: %d \n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
 					MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
 					++roundrobin;
 								
-					// r1 = compute(map[key1], map[key2], key1, key2);
-					// V[key1] += r1;  // sum the partial values for key1
-					// resetkey1 = true;
-					// if(debug){
-					// 	std::cout << "process " << myId << "\t r1: " << r1 << std::endl;	
-					// }
 					if(roundrobin>(numP-1)){
 						roundrobin = 1; 
 						if(debug){
@@ -299,42 +273,18 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				// if key2 reaches the SIZE limit ....
-				if (map[key2] == SIZE && map[key1] != 0) {		
-					c.m_1 = map[key2];
-					c.m_2 = map[key1];
-					c.key1 = key2;
-					c.key2 = key1;
+				if (map[tmpKey2.key2] == SIZE && map[tmpKey2.key1] != 0) {		
+					c.m_1 = map[tmpKey2.key2];
+					c.m_2 = map[tmpKey2.key1];
+					c.key1 = tmpKey2.key2;
+					c.key2 = tmpKey2.key1;
 					++disabledKeysNumber;
 					MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
-					printf("hello, i am the node server and i have sent the values: %f, %f, %f, %f, round robin: %d\n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
-					++roundrobin;		
-					// // r2 = compute(map[key2], map[key1], key2, key1);
-					// V[key2] += r2;  // sum the partial values for key1
-					// resetkey2 = true;
-					// if(debug){
-					// 	std::cout << "process " << myId << "\t r2: " << r2 << std::endl;
-					// }
+					printf("hello, i am the node server and i have sent the values: %ld, %ld, %f, %f, round robin: %d\n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
+					++roundrobin;
 				}
-			// }
-			// if (resetkey1) {
-			// 	// MPI_Wait(&rq_recv, &status);
-			// 	// updating the map[key1] initial value before restarting
-			// 	// the computation
-			// 	auto _r1 = static_cast<unsigned long>(r1) % SIZE;
-			// 	map[key1] = (_r1>(SIZE/2)) ? 0 : _r1;
-			// 	resetkey1 = false;
-			// }
-			// if (resetkey2) {
-			// 	// MPI_Wait(&rq_recv, &status);
-			// 	// updating the map[key2] initial value before restarting
-			// 	// the computation
-			// 	auto _r2 = static_cast<unsigned long>(r2) % SIZE;
-			// 	map[key2] = (_r2>(SIZE/2)) ? 0 : _r2;
-			// 	resetkey2 = false;
-			// }
-
-			// MPI_Wait(&rq_recv, &status);
-		}
+			}
+		} 
 		c.key1 = -1;
 		for(int g=1; g<numP; g++){
 			if(debug){
@@ -345,13 +295,18 @@ int main(int argc, char* argv[]) {
 		} 
 		if(debug){
 			std::cout << "END key sharing and compute" << std::endl;
-		}
-		for(long i=0;i<nkeys; ++i) {
-			std::printf("key %ld : %f\n", i, V[i]);
-		}
-		return 0;
-	}
+			for(long i=0;i<nkeys; ++i) {
+				std::printf("key %ld : %f\n", i, V[i]);
+			}
 
+			// map[80] = 49;
+			// map[93] = 10;
+			for(long i=0;i<nkeys; ++i){
+				std::printf("[MAP] key %ld : %ld\n", i, map[i]);
+			}
+		}
+	}
+	// second section
 	// compute the last values in the other nodes but managements by server
 	if(!myId) { // i am the server
 		int roundrobin = 1; //id of the working node that we send the information for run the method compute
@@ -378,8 +333,8 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c1: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					// MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
-					MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
+					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
+					// MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
 					++roundrobin;
 
 					if(roundrobin>(numP-1)){
@@ -395,8 +350,8 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c2: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					// MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
-					MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
+					MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
+					// MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
 					++roundrobin;
 				}
 			}
@@ -436,27 +391,6 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		}
-
-		// std::vector<float>* tempV = new std::vector<float>();
-		// std::vector<std::vector<float>> VV;
-		// tempV->reserve(nkeys);
-		// for(int j=0; j<(numP-1); j++){ // i have to merge the vector in only one
-		// 	MPI_Recv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		// 	// MPI_Irecv((*tempV).data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
-		// 	VV.emplace_back((*tempV));
-		// }
-		// delete tempV;
-		// // std::cout<<VV.size()<<std::endl;
-		// // std::cout<<VV[0].size()<<std::endl;
-		// for(int j=0; j<(numP-1); j++) {
-		// 	for(int i=0; i<nkeys;i++){
-
-		// 		V[i] += (VV[j])[i];
-		// 		if(debug){
-		// 			std::cout << "V[i]: " << V[i] << std::endl;
-		// 		}
-		// 	}
-		// }
 		
 	} else { //we leave the server and enter in the nodes
 		if(debug){
@@ -471,18 +405,18 @@ int main(int argc, char* argv[]) {
 			MPI_Recv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			//MPI_Wait(&rq_recv, &status);
 			if(debug){
-				printf("hello, i am the node %d and i have received the values: %f, %f, %f, %f", myId, c.key1, c.key2, c.m_1, c.m_2);
+				printf("hello, i am the node %d and i have received the values: %ld, %ld, %f, %f", myId, c.key1, c.key2, c.m_1, c.m_2);
 			}
 			if(c.key1 == -1){
 				check = false;
 				if(debug){
 					std::cout << myId << " is leaving" << std::endl;
 				}
-			} else{
+			} else {
 				auto r = compute(c.m_1, c.m_2, c.key1, c.key2);
 				V[c.key1] += r;
 				if(debug){
-					std::cout << "V[key1] " << V[key1] << " with key: " << key1 << "\t r: "<< r << std::endl;	
+					std::cout << "V[key1] " << V[c.key1] << " with key: " << c.key1 << "\t r: "<< r << std::endl;	
 				}
 			}	
 		}
@@ -494,7 +428,7 @@ int main(int argc, char* argv[]) {
 		
 		if(debug){
 			for(int h=0; h<nkeys; h++){
-				std::cout << "V[h]: " << V[h] << std::endl;
+				std::cout << h << " V[h]: " << V[h] << std::endl;
 			}
 		}
 	}

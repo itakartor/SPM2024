@@ -119,6 +119,11 @@ int main(int argc, char* argv[]) {
 	for(long i=0;i<nkeys; ++i){
 			std::printf("key %ld : %f\n", i, V[i]);
 	}
+
+	for(long i=0;i<nkeys; ++i){
+			std::printf("[MAP] key %ld : %ld\n", i, map[i]);
+	}
+	
 	return 0;
 
 	// compute the last values
