@@ -123,9 +123,9 @@ int main(int argc, char* argv[]) {
 	for(long i=0;i<nkeys; ++i){
 			std::printf("[MAP] key %ld : %ld\n", i, map[i]);
 	}
-	
-	return 0;
-
+// return 0; and V[99] 1507517.875000 
+// return 0; and V[99] 1.50752e+06
+	std::printf("and V[99] %f \n", V[99]);
 	// compute the last values
 	for(long i=0;i<nkeys; ++i) {
 		for(long j=0;j<nkeys; ++j) {
@@ -133,6 +133,13 @@ int main(int argc, char* argv[]) {
 			if (map[i]>0 && map[j]>0) {
 				auto r1= compute(map[i], map[j], i, j);
 				auto r2= compute(map[j], map[i], j, i);
+
+				if(i == 99){
+					//printf("V[key1] %f, %ld, %ld, %ld, %ld\n", V[i], i, j, map[i], map[j]);
+					printf("r %f\n", round(r1));
+				} else if(j == 99){
+					printf("r %f\n", round(r2));
+				}
 				V[i] += r1;
 				V[j] += r2;
 			}
