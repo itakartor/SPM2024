@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 	computation c;
 
 	//MPI_Request req;
-	MPI_Request rq_send;// rq_recv;
+	MPI_Request rq_send;
 	//MPI_Status status;
 
 	double start = MPI_Wtime();
@@ -236,23 +236,32 @@ int main(int argc, char* argv[]) {
 				queueKeys.emplace_back(tmpKey);
 				
 				// printf("hello, i am the node server and i am generating: %ld, %ld last elem: %ld \n", key1, key2, (*(queueKeys.end())).key1);
+			} else {
+				printf("[SERVER] i have generated all the pairs\n");
 			}
+
+			// MPI_Irecv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv); // && mapDisabledKeys[c.key1] && c.result != 0
 			if(disabledKeysNumber > 0) {
+				// MPI_Wait(&rq_recv, MPI_STATUS_IGNORE);
 				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
-				if((c.key1 == 80 || c.key1 == 93) && false){
+				if(c.key1 == 80 || c.key1 == 93){
 					printf("hello, i am the node server and i have received the values: %f, %ld\n", c.result, c.key1);
 				}
-				// c.m_1 //result
-				// c.key1 //key to reset
+				// c.result //result
+				// c.key1 //key to resets
+
 				--disabledKeysNumber;
+				mapDisabledKeys[c.key1] = false;
 				auto _r1 = static_cast<unsigned long>(c.result) % SIZE;
 				map[c.key1] = (_r1>(SIZE/2)) ? 0 : _r1;
-			} else {
-				if(!queueKeys.empty()) {
-					tmpKey2 = *(queueKeys.begin());
-					// qui controllo sempre che il primo non sia una coppia disabilitata.
-					queueKeys.erase(queueKeys.begin());
+			} 
+			if(!queueKeys.empty()) {
+				tmpKey2 = *(queueKeys.begin());
+				queueKeys.erase(queueKeys.begin());
+				if(mapDisabledKeys[tmpKey2.key1] || mapDisabledKeys[tmpKey2.key2]) {
+					queueKeys.emplace_back(tmpKey2);
+					printf("hello, i am the node server the keys are disabled %ld, %ld\n", tmpKey2.key1, tmpKey2.key2);
+				} else {
 					map[tmpKey2.key1]++;  // count the number of key1 keys
 					map[tmpKey2.key2]++;  // count the number of key2 keys
 
@@ -315,7 +324,7 @@ int main(int argc, char* argv[]) {
 		// map[93] = 10;
 	}
 
-	return 0;
+	// return 0;
 	// second section
 	// compute the last values in the other nodes but managements by server
 	if(!myId) { // i am the server
