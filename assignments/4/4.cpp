@@ -36,6 +36,7 @@ struct keypair{
 //the struct used for send information to nodes for run the compute method
 struct computation{
 	long m_1, m_2, key1, key2;
+	float result;
 };
 
 long random(const int &min, const int &max) {
@@ -114,8 +115,12 @@ int main(int argc, char* argv[]) {
 	long key1, key2;
 
 	std::map<long, long> map;
+	std::map<long, bool> mapDisabledKeys;
 	if(!myId){
-		for(long i=0;i<nkeys; ++i) map[i]=0;
+		for(long i=0;i<nkeys; ++i) {
+			map[i] = 0;
+			mapDisabledKeys[i] = false;
+		}
 	}
 	
 	std::vector<float> V(nkeys, 0);
@@ -136,15 +141,15 @@ int main(int argc, char* argv[]) {
 	MPI_Type_commit(&keysType);
 
 	//COMP DATATYPE
-	int blockLengths_c[1] = {4};
+	int blockLengths_c[2] = {4,1};
 	MPI_Aint lb_c, extent_c;
 	MPI_Type_get_extent(MPI_LONG, &lb_c, &extent_c); 
 	MPI_Aint disp_c[2] = {0, 4*extent_c};
-	MPI_Datatype types_c[1] = {MPI_LONG}; 
+	MPI_Datatype types_c[2] = {MPI_LONG, MPI_FLOAT}; 
 
 	// Create the datatype for the parameters
 	MPI_Datatype compType;
-	MPI_Type_create_struct(1, blockLengths_c, disp_c, types_c, &compType);
+	MPI_Type_create_struct(2, blockLengths_c, disp_c, types_c, &compType);
 	MPI_Type_commit(&compType);
 
 	computation c;
@@ -179,11 +184,11 @@ int main(int argc, char* argv[]) {
 
 				auto r = compute(c.m_1, c.m_2, c.key1, c.key2);
 				V[c.key1] += r;
-				c.m_1 = r;
+				c.result = r;
 				c.key1 = c.key1;
 				//MPI_Send(&k, 1, keysType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
-				if(debug){
-					printf("hello, i am the node %d and i am computing : %ld, %ld \n", myId, c.m_1, c.key1);
+				if(c.key1 == 93){
+					printf("hello, i am the node %d and i am computing : %f, %ld, %ld, %f \n", myId, c.result, c.key1, c.key2, r);
 				}
 				MPI_Isend(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 
@@ -207,8 +212,7 @@ int main(int argc, char* argv[]) {
 		keypair tmpKey;
 		keypair tmpKey2;
 		int i = 0;
-		while(i<length || disabledKeysNumber > 0 || queueKeys.size() > 0) {
-			++i;
+		while(i<length || disabledKeysNumber > 0 || !queueKeys.empty()) {
 			if(roundrobin>(numP-1)){
 				roundrobin = 1; 
 				if(debug){
@@ -217,28 +221,15 @@ int main(int argc, char* argv[]) {
 			}
 
 			// std::cout<< "disabledKeys sono più di 1" << std::endl;
-			
-			if(disabledKeysNumber > 0) {
-				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
-				if(debug){
-					printf("hello, i am the node server and i have received the values: %ld, %ld \n", c.m_1, c.key1);
-				}
-				// c.m_1 //result
-				// c.key1 //key to reset
-				--disabledKeysNumber;
-				auto _r1 = static_cast<unsigned long>(c.m_1) % SIZE;
-				map[c.key1] = (_r1>(SIZE/2)) ? 0 : _r1;
-			}
 
 			if(i<length){
-				
+				++i;
 				key1 = random(0, nkeys-1);  // value in [0,nkeys[
 				key2 = random(0, nkeys-1);  // value in [0,nkeys[
 				if (key1 == key2) // only distinct values in the pair
 					key1 = (key1+1) % nkeys;
 
-				
+				// qui devo controllare se una delle due chiavi è disabilitata se si metto in coda altrimenti aggiorno la mappa con tutte le conseguenze
 				tmpKey.key1 = key1;
 				tmpKey.key2 = key2;
 
@@ -246,46 +237,61 @@ int main(int argc, char* argv[]) {
 				
 				// printf("hello, i am the node server and i am generating: %ld, %ld last elem: %ld \n", key1, key2, (*(queueKeys.end())).key1);
 			}
-			if(disabledKeysNumber == 0 && queueKeys.size() > 0) {
-				tmpKey2 = *(queueKeys.begin());
+			if(disabledKeysNumber > 0) {
+				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				// MPI_Irecv(&k, 1, keysType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
+				if((c.key1 == 80 || c.key1 == 93) && false){
+					printf("hello, i am the node server and i have received the values: %f, %ld\n", c.result, c.key1);
+				}
+				// c.m_1 //result
+				// c.key1 //key to reset
+				--disabledKeysNumber;
+				auto _r1 = static_cast<unsigned long>(c.result) % SIZE;
+				map[c.key1] = (_r1>(SIZE/2)) ? 0 : _r1;
+			} else {
+				if(!queueKeys.empty()) {
+					tmpKey2 = *(queueKeys.begin());
+					// qui controllo sempre che il primo non sia una coppia disabilitata.
+					queueKeys.erase(queueKeys.begin());
+					map[tmpKey2.key1]++;  // count the number of key1 keys
+					map[tmpKey2.key2]++;  // count the number of key2 keys
 
-				queueKeys.erase(queueKeys.begin());
-				map[tmpKey2.key1]++;  // count the number of key1 keys
-				map[tmpKey2.key2]++;  // count the number of key2 keys
-
-				if (map[tmpKey2.key1] == SIZE && map[tmpKey2.key2] != 0) {
-					c.m_1 = map[tmpKey2.key1];
-					c.m_2 = map[tmpKey2.key2];
-					c.key1 = tmpKey2.key1;
-					c.key2 = tmpKey2.key2;
-					++disabledKeysNumber;
-					if(debug){
-						printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d \n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
-					}
-					MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
-					++roundrobin;
-								
-					if(roundrobin>(numP-1)){
-						roundrobin = 1; 
+					if (map[tmpKey2.key1] == SIZE && map[tmpKey2.key2] != 0) {
+						c.m_1 = map[tmpKey2.key1];
+						c.m_2 = map[tmpKey2.key2];
+						c.key1 = tmpKey2.key1;
+						c.key2 = tmpKey2.key2;
+						++disabledKeysNumber;
+						mapDisabledKeys[tmpKey2.key1] = true;
 						if(debug){
-							std::cout << "roundrobin resettato a 1" << std::endl;
+							printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d \n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
+						}
+						MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
+						++roundrobin;
+									
+						if(roundrobin>(numP-1)){
+							roundrobin = 1; 
+							if(debug){
+								std::cout << "roundrobin resettato a 1" << std::endl;
+							}
 						}
 					}
-				}
-				// if key2 reaches the SIZE limit ....
-				if (map[tmpKey2.key2] == SIZE && map[tmpKey2.key1] != 0) {		
-					c.m_1 = map[tmpKey2.key2];
-					c.m_2 = map[tmpKey2.key1];
-					c.key1 = tmpKey2.key2;
-					c.key2 = tmpKey2.key1;
-					++disabledKeysNumber;
-					MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
-					if(debug){
-						printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d\n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
+					// if key2 reaches the SIZE limit ....
+					if (map[tmpKey2.key2] == SIZE && map[tmpKey2.key1] != 0) {		
+						c.m_1 = map[tmpKey2.key2];
+						c.m_2 = map[tmpKey2.key1];
+						c.key1 = tmpKey2.key2;
+						c.key2 = tmpKey2.key1;
+						++disabledKeysNumber;
+						mapDisabledKeys[tmpKey2.key2] = true;
+						MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
+						if(debug){
+							printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d\n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
+						}
+						++roundrobin;
 					}
-					++roundrobin;
 				}
-			}
+			} 
 		} 
 		c.key1 = -1;
 		for(int g=1; g<numP; g++){
@@ -309,7 +315,7 @@ int main(int argc, char* argv[]) {
 		// map[93] = 10;
 	}
 
-	// return 0;
+	return 0;
 	// second section
 	// compute the last values in the other nodes but managements by server
 	if(!myId) { // i am the server
@@ -389,7 +395,7 @@ int main(int argc, char* argv[]) {
 				if(debug2){
 					std::cout << "V[i]: " << V[i] <<" temp: "<<tempV[i] << std::endl;
 				}
-				if(tempVV[j].size() > 0){
+				if(!tempVV[j].empty()){
 					V[i] += (tempVV[j])[i];
 				}
 				//tempV[i];

@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 			resetkey1=true;			
 		}
 		// if key2 reaches the SIZE limit ....
-		if (map[key2] == SIZE && map[key1]!=0) {			
+		if (map[key2] == SIZE && map[key1]!=0) {	
 			r2= compute(map[key2], map[key1], key2, key1);
 			V[key2] += r2;  // sum the partial values for key1
 			resetkey2=true;
@@ -104,6 +104,9 @@ int main(int argc, char* argv[]) {
 			// updating the map[key1] initial value before restarting
 			// the computation
 			auto _r1 = static_cast<unsigned long>(r1) % SIZE;
+			if(key1 == 93) {
+				printf("hello, the computed value is %f key: %ld, %ld\n", r1, key1, key2);
+			}	
 			map[key1] = (_r1>(SIZE/2)) ? 0 : _r1;
 			resetkey1 = false;
 		}
@@ -111,11 +114,15 @@ int main(int argc, char* argv[]) {
 			// updating the map[key2] initial value before restarting
 			// the computation
 			auto _r2 = static_cast<unsigned long>(r2) % SIZE;
+			if(key2 == 93) {
+				printf("hello, the computed value is %f key: %ld, %ld\n", r2, key2, key1);
+			}	
 			map[key2] = (_r2>(SIZE/2)) ? 0 : _r2;
 			resetkey2 = false;
 		}
 	}
 
+	return 0;
 	for(long i=0;i<nkeys; ++i){
 			std::printf("key %ld : %f\n", i, V[i]);
 	}
