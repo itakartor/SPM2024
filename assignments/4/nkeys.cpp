@@ -104,9 +104,9 @@ int main(int argc, char* argv[]) {
 			// updating the map[key1] initial value before restarting
 			// the computation
 			auto _r1 = static_cast<unsigned long>(r1) % SIZE;
-			if(key1 == 93) {
-				printf("hello, the computed value is %f key: %ld, %ld\n", r1, key1, key2);
-			}	
+			// if(key1 == 98) {
+			// 	printf("hello, the computed value is %f key: %ld, %ld\n", r1, key1, key2);
+			// }	
 			map[key1] = (_r1>(SIZE/2)) ? 0 : _r1;
 			resetkey1 = false;
 		}
@@ -114,25 +114,25 @@ int main(int argc, char* argv[]) {
 			// updating the map[key2] initial value before restarting
 			// the computation
 			auto _r2 = static_cast<unsigned long>(r2) % SIZE;
-			if(key2 == 93) {
-				printf("hello, the computed value is %f key: %ld, %ld\n", r2, key2, key1);
-			}	
+			// if(key2 == 98) {
+			// 	printf("hello, the computed value is %f key: %ld, %ld\n", r2, key2, key1);
+			// }	
 			map[key2] = (_r2>(SIZE/2)) ? 0 : _r2;
 			resetkey2 = false;
 		}
 	}
 
-	return 0;
-	for(long i=0;i<nkeys; ++i){
-			std::printf("key %ld : %f\n", i, V[i]);
-	}
+	// return 0;
+	// for(long i=0;i<nkeys; ++i){
+	// 		std::printf("key %ld : %f\n", i, V[i]);
+	// }
 
-	for(long i=0;i<nkeys; ++i){
-			std::printf("[MAP] key %ld : %ld\n", i, map[i]);
-	}
+	// for(long i=0;i<nkeys; ++i){
+	// 		std::printf("[MAP] key %ld : %ld\n", i, map[i]);
+	// }
 // return 0; and V[99] 1507517.875000 
 // return 0; and V[99] 1.50752e+06
-	std::printf("and V[99] %f \n", V[99]);
+	// std::printf("and V[99] %f \n", V[99]);
 	// compute the last values
 	for(long i=0;i<nkeys; ++i) {
 		for(long j=0;j<nkeys; ++j) {
@@ -140,13 +140,18 @@ int main(int argc, char* argv[]) {
 			if (map[i]>0 && map[j]>0) {
 				auto r1= compute(map[i], map[j], i, j);
 				auto r2= compute(map[j], map[i], j, i);
-
-				if(i == 99){
-					//printf("V[key1] %f, %ld, %ld, %ld, %ld\n", V[i], i, j, map[i], map[j]);
-					printf("r %f\n", round(r1));
-				} else if(j == 99){
-					printf("r %f\n", round(r2));
-				}
+				// if(i == 98) {
+				// 	printf("hello, the computed value is %f key: %ld, %ld\n", r1, i, j);
+				// }	
+				// if(j == 98) {
+				// 	printf("hello, the computed value is %f key: %ld, %ld\n", r2, j, i);
+				// }	
+				// if(i == 98){
+				// 	//printf("V[key1] %f, %ld, %ld, %ld, %ld\n", V[i], i, j, map[i], map[j]);
+				// 	printf("r %f\n", r1);
+				// } else if(j == 98){
+				// 	printf("r %f\n", r2);
+				// }
 				V[i] += r1;
 				V[j] += r2;
 			}
@@ -154,10 +159,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	// printing the results
-	if (print) {
-		for(long i=0;i<nkeys; ++i)
-			std::printf("key %ld : %f\n", i, V[i]);
-	}
+	// if (print) {
+	// 	for(long i=0;i<nkeys; ++i)
+	// 		std::printf("key %ld : %f\n", i, V[i]);
+	// }
 
 	
 }

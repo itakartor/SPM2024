@@ -79,8 +79,10 @@ float compute(const long c1, const long c2, long key1, long key2) {
 	init(A, c1, c2, key1);
 	init(B, c2, c1, key2);
 	auto r = mm(A,B, c1,c2);
-	if(debug && key1 == 99)
+	if(debug && key1 == 99) {
 		printf("compute method %f\n", r);
+	}
+	
 	return r;
 }
 
@@ -187,9 +189,6 @@ int main(int argc, char* argv[]) {
 				c.result = r;
 				c.key1 = c.key1;
 				//MPI_Send(&k, 1, keysType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
-				if(c.key1 == 93){
-					printf("hello, i am the node %d and i am computing : %f, %ld, %ld, %f \n", myId, c.result, c.key1, c.key2, r);
-				}
 				MPI_Isend(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 
 				if(debug){
@@ -244,7 +243,7 @@ int main(int argc, char* argv[]) {
 			if(disabledKeysNumber > 0) {
 				// MPI_Wait(&rq_recv, MPI_STATUS_IGNORE);
 				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				if(c.key1 == 80 || c.key1 == 93){
+				if(debug && (c.key1 == 80 || c.key1 == 93)){
 					printf("hello, i am the node server and i have received the values: %f, %ld\n", c.result, c.key1);
 				}
 				// c.result //result
@@ -260,7 +259,7 @@ int main(int argc, char* argv[]) {
 				queueKeys.erase(queueKeys.begin());
 				if(mapDisabledKeys[tmpKey2.key1] || mapDisabledKeys[tmpKey2.key2]) {
 					queueKeys.emplace_back(tmpKey2);
-					printf("hello, i am the node server the keys are disabled %ld, %ld\n", tmpKey2.key1, tmpKey2.key2);
+					// printf("hello, i am the node server the keys are disabled %ld, %ld\n", tmpKey2.key1, tmpKey2.key2);
 				} else {
 					map[tmpKey2.key1]++;  // count the number of key1 keys
 					map[tmpKey2.key2]++;  // count the number of key2 keys
@@ -424,9 +423,7 @@ int main(int argc, char* argv[]) {
 			if(debug2){
 				std::cout << "hello, i am the node " << myId << " and i am waiting to receive a message" << std::endl;
 			}
-			//MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
 			MPI_Recv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//MPI_Wait(&rq_recv, &status);
 			if(debug2 && c.key1 == 99){
 				printf("hello, i am the node %d and i have received the values: %ld, %ld, %ld, %ld\n", myId, c.key1, c.key2, c.m_1, c.m_2);
 			}
@@ -475,23 +472,3 @@ int main(int argc, char* argv[]) {
 	return 0;
 
 }
-
-// values: 2 120 1 WITH 4 NODES (1st test)
-//PARALLEL TIME: ~2,9 ms
-//SEQUENTIAL TIME: ~14 ms
-
-//values: 2 1.000.000 
-// SEQUENTIAL TIME: ~144476 ms
-// WITH 11 NODES
-// PARALLEL TIME: ~27.4509 s
-// WITH 21 NODES
-// PARALLEL TIME: ~16.9323 s
-
-//values: 100 1.000.000 
-// SEQUENTIAL TIME: ~86749 ms
-// WITH 11 NODES
-// PARALLEL TIME: ~ 27.4736 s
-// WITH 21 NODES
-// PARALLEL TIME: ~11.9632 s
-//WITH 51 NODES 
-//PARALLEL TIME: ~7.9109 s
