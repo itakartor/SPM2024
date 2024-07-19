@@ -1,0 +1,76 @@
+TEMP RECV --> h: 0 , temp[h]:0.000000
+TEMP RECV --> h: 1 , temp[h]:0.000000
+TEMP RECV --> h: 2 , temp[h]:0.000000
+TEMP RECV --> h: 3 , temp[h]:0.000000
+TEMP RECV --> h: 4 , temp[h]:0.000000
+TEMP RECV --> h: 5 , temp[h]:0.000000
+TEMP RECV --> h: 6 , temp[h]:0.000000
+TEMP RECV --> h: 7 , temp[h]:0.000000
+TEMP RECV --> h: 8 , temp[h]:0.000000
+TEMP RECV --> h: 9 , temp[h]:0.000000
+TEMP RECV --> h: 0 , temp[h]:0.000000
+TEMP RECV --> h: 1 , temp[h]:0.000000
+TEMP RECV --> h: 2 , temp[h]:0.000000
+TEMP RECV --> h: 3 , temp[h]:0.000000
+TEMP RECV --> h: 4 , temp[h]:0.000000
+TEMP RECV --> h: 5 , temp[h]:0.000000
+TEMP RECV --> h: 6 , temp[h]:0.000000
+TEMP RECV --> h: 7 , temp[h]:0.000000
+TEMP RECV --> h: 8 , temp[h]:0.000000
+TEMP RECV --> h: 9 , temp[h]:0.000000
+NODE V[h]: h: 7 , V[h]:0.000000
+NODE V[h]: h: 8 , V[h]:0.000000
+NODE V[h]: h: 9 , V[h]:0.000000
+TEMP RECV --> h: 0 , temp[h]:1532402.125000
+TEMP RECV --> h: 1 , temp[h]:903555.812500
+TEMP RECV --> h: 2 , temp[h]:1645625.875000
+TEMP RECV --> h: 3 , temp[h]:1788559.750000
+NODE V[h]: h: 0 , V[h]:1532402.125000
+NODE V[h]: h: 1 , V[h]:903555.812500
+NODE V[h]: h: 2 , V[h]:1645625.875000
+NODE V[h]: h: 3 , V[h]:1788559.750000
+NODE V[h]: h: 4 , V[h]:570959.125000
+NODE V[h]: h: 5 , V[h]:1201250.125000
+TEMP RECV --> h: 4 , temp[h]:570959.125000
+TEMP RECV --> h: 5 , temp[h]:1201250.125000
+TEMP RECV --> h: 6 , temp[h]:2354959.750000
+TEMP RECV --> h: 7 , temp[h]:83057.671875
+TEMP RECV --> h: 8 , temp[h]:1815743.125000
+NODE V[h]: h: 6 , V[h]:2354959.750000
+NODE V[h]: h: 7 , V[h]:83057.671875
+NODE V[h]: h: 8 , V[h]:1815743.125000
+NODE V[h]: h: 9 , V[h]:2148074.500000
+TEMP RECV --> h: 9 , temp[h]:2148074.500000
+
+TEMP CHECK: starter V[i] = 361431.156250
+TEMP CHECK: result V[i] = 1893833.250000, (tempVV[j])[i]=1532402.125000
+TEMP CHECK: starter V[i] = 178729.328125
+TEMP CHECK: result V[i] = 1082285.125000, (tempVV[j])[i]=903555.812500
+TEMP CHECK: starter V[i] = 127232.351562
+TEMP CHECK: result V[i] = 1772858.250000, (tempVV[j])[i]=1645625.875000
+TEMP CHECK: starter V[i] = 294634.562500
+TEMP CHECK: result V[i] = 2083194.250000, (tempVV[j])[i]=1788559.750000
+TEMP CHECK: starter V[i] = 369464.875000
+TEMP CHECK: result V[i] = 940424.000000, (tempVV[j])[i]=570959.125000
+TEMP CHECK: starter V[i] = 238336.375000
+TEMP CHECK: result V[i] = 1439586.500000, (tempVV[j])[i]=1201250.125000
+TEMP CHECK: starter V[i] = 288662.281250
+TEMP CHECK: result V[i] = 2643622.000000, (tempVV[j])[i]=2354959.750000
+TEMP CHECK: starter V[i] = 431128.062500
+TEMP CHECK: result V[i] = 514185.750000, (tempVV[j])[i]=83057.671875
+TEMP CHECK: starter V[i] = 331006.187500
+TEMP CHECK: result V[i] = 2146749.250000, (tempVV[j])[i]=1815743.125000
+TEMP CHECK: starter V[i] = 234611.078125
+TEMP CHECK: result V[i] = 2382685.500000, (tempVV[j])[i]=2148074.500000
+
+
+key 0 : 1893833.250000
+key 1 : 1082285.125000
+key 2 : 1772858.250000
+key 3 : 2083194.250000
+key 4 : 940424.000000
+key 5 : 1439586.500000
+key 6 : 2643622.000000
+key 7 : 514185.750000
+key 8 : 2146749.250000
+key 9 : 2382685.500000

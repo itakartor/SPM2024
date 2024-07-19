@@ -1,0 +1,613 @@
+Check SEND: m1=52, m2=43, key1=0, key2=1 
+Check SEND: m1=43, m2=52, key1=1, key2=0 
+Check SEND: m1=52, m2=54, key1=0, key2=2 
+Check SEND: m1=54, m2=52, key1=2, key2=0
+Check SEND: m1=52, m2=56, key1=0, key2=3
+Check SEND: m1=56, m2=52, key1=3, key2=0
+Check SEND: m1=52, m2=37, key1=0, key2=4
+Check SEND: m1=37, m2=52, key1=4, key2=0
+c values: m1=52, m2=43, key1=0, key2=1
+Check SEND: m1=52, m2=49, key1=0, key2=5
+Check SEND: m1=49, m2=52, key1=5, key2=0
+Check SEND: m1=52, m2=63, key1=0, key2=6
+Check SEND: m1=63, m2=52, key1=6, key2=0
+Check SEND: m1=52, m2=18, key1=0, key2=7
+Check SEND: m1=18, m2=52, key1=7, key2=0
+Check SEND: m1=52, m2=58, key1=0, key2=8
+Check SEND: m1=58, m2=52, key1=8, key2=0
+Check SEND: m1=52, m2=62, key1=0, key2=9
+Check SEND: m1=62, m2=52, key1=9, key2=0
+Check SEND: m1=43, m2=52, key1=1, key2=0
+Check SEND: m1=52, m2=43, key1=0, key2=1
+Check SEND: m1=43, m2=54, key1=1, key2=2
+Check SEND: m1=54, m2=43, key1=2, key2=1
+Check SEND: m1=43, m2=56, key1=1, key2=3
+Check SEND: m1=56, m2=43, key1=3, key2=1
+Check SEND: m1=43, m2=37, key1=1, key2=4
+Check SEND: m1=37, m2=43, key1=4, key2=1
+Check SEND: m1=43, m2=49, key1=1, key2=5
+Check SEND: m1=49, m2=43, key1=5, key2=1
+Check SEND: m1=43, m2=63, key1=1, key2=6
+Check SEND: m1=63, m2=43, key1=6, key2=1
+Check SEND: m1=43, m2=18, key1=1, key2=7
+Check SEND: m1=18, m2=43, key1=7, key2=1
+Check SEND: m1=43, m2=58, key1=1, key2=8
+Check SEND: m1=58, m2=43, key1=8, key2=1
+Check SEND: m1=43, m2=62, key1=1, key2=9
+Check SEND: m1=62, m2=43, key1=9, key2=1
+Check SEND: m1=54, m2=52, key1=2, key2=0
+Check SEND: m1=52, m2=54, key1=0, key2=2
+Check SEND: m1=54, m2=43, key1=2, key2=1
+Check SEND: m1=43, m2=54, key1=1, key2=2
+Check SEND: m1=54, m2=56, key1=2, key2=3
+Check SEND: m1=56, m2=54, key1=3, key2=2
+Check SEND: m1=54, m2=37, key1=2, key2=4
+Check SEND: m1=37, m2=54, key1=4, key2=2
+Check SEND: m1=54, m2=49, key1=2, key2=5
+Check SEND: m1=49, m2=54, key1=5, key2=2
+Check SEND: m1=54, m2=63, key1=2, key2=6
+Check SEND: m1=63, m2=54, key1=6, key2=2
+Check SEND: m1=54, m2=18, key1=2, key2=7
+Check SEND: m1=18, m2=54, key1=7, key2=2
+Check SEND: m1=54, m2=58, key1=2, key2=8
+Check SEND: m1=58, m2=54, key1=8, key2=2
+Check SEND: m1=54, m2=62, key1=2, key2=9
+Check SEND: m1=62, m2=54, key1=9, key2=2
+Check SEND: m1=56, m2=52, key1=3, key2=0
+compute results: m1=52, m2=43, key1=0, key2=1, r=64430.796875
+Check SEND: m1=52, m2=56, key1=0, key2=3
+Check SEND: m1=56, m2=43, key1=3, key2=1
+Check SEND: m1=43, m2=56, key1=1, key2=3
+Check SEND: m1=56, m2=54, key1=3, key2=2
+Check SEND: m1=54, m2=56, key1=2, key2=3
+Check SEND: m1=56, m2=37, key1=3, key2=4
+Check SEND: m1=37, m2=56, key1=4, key2=3
+Check SEND: m1=56, m2=49, key1=3, key2=5
+Check SEND: m1=49, m2=56, key1=5, key2=3
+Check SEND: m1=56, m2=63, key1=3, key2=6
+Check SEND: m1=63, m2=56, key1=6, key2=3
+Check SEND: m1=56, m2=18, key1=3, key2=7
+Check SEND: m1=18, m2=56, key1=7, key2=3
+c values: m1=43, m2=52, key1=1, key2=0
+Check SEND: m1=56, m2=58, key1=3, key2=8
+Check SEND: m1=58, m2=56, key1=8, key2=3
+Check SEND: m1=56, m2=62, key1=3, key2=9
+Check SEND: m1=62, m2=56, key1=9, key2=3
+Check SEND: m1=37, m2=52, key1=4, key2=0
+Check SEND: m1=52, m2=37, key1=0, key2=4
+Check SEND: m1=37, m2=43, key1=4, key2=1
+Check SEND: m1=43, m2=37, key1=1, key2=4
+Check SEND: m1=37, m2=54, key1=4, key2=2
+Check SEND: m1=54, m2=37, key1=2, key2=4
+Check SEND: m1=37, m2=56, key1=4, key2=3
+compute results: m1=43, m2=52, key1=1, key2=0, r=54951.773438
+c values: m1=52, m2=54, key1=0, key2=2
+compute results: m1=52, m2=54, key1=0, key2=2, r=101345.593750
+c values: m1=54, m2=52, key1=2, key2=0
+compute results: m1=54, m2=52, key1=2, key2=0, r=104589.414062
+c values: m1=52, m2=56, key1=0, key2=3
+compute results: m1=52, m2=56, key1=0, key2=3, r=107625.265625
+c values: m1=56, m2=52, key1=3, key2=0
+compute results: m1=56, m2=52, key1=3, key2=0, r=114470.859375
+c values: m1=52, m2=37, key1=0, key2=4
+compute results: m1=52, m2=37, key1=0, key2=4, r=44754.136719
+c values: m1=37, m2=52, key1=4, key2=0
+compute results: m1=37, m2=52, key1=4, key2=0, r=33777.792969
+c values: m1=52, m2=49, key1=0, key2=5
+compute results: m1=52, m2=49, key1=0, key2=5, r=77723.226562
+c values: m1=49, m2=52, key1=5, key2=0
+compute results: m1=49, m2=52, key1=5, key2=0, r=74008.937500
+c values: m1=52, m2=63, key1=0, key2=6
+compute results: m1=52, m2=63, key1=0, key2=6, r=132418.656250
+c values: m1=63, m2=52, key1=6, key2=0
+compute results: m1=63, m2=52, key1=6, key2=0, r=155118.515625
+c values: m1=52, m2=18, key1=0, key2=7
+compute results: m1=52, m2=18, key1=0, key2=7, r=11228.271484
+c values: m1=18, m2=52, key1=7, key2=0
+compute results: m1=18, m2=52, key1=7, key2=0, r=4702.508789
+c values: m1=52, m2=58, key1=0, key2=8
+compute results: m1=52, m2=58, key1=0, key2=8, r=105840.515625
+c values: m1=58, m2=52, key1=8, key2=0
+compute results: m1=58, m2=52, key1=8, key2=0, r=115704.007812
+c values: m1=52, m2=62, key1=0, key2=9
+compute results: m1=52, m2=62, key1=0, key2=9, r=120834.679688
+c values: m1=62, m2=52, key1=9, key2=0
+compute results: m1=62, m2=52, key1=9, key2=0, r=139436.015625
+c values: m1=43, m2=52, key1=1, key2=0
+compute results: m1=43, m2=52, key1=1, key2=0, r=54951.773438
+c values: m1=52, m2=43, key1=0, key2=1
+compute results: m1=52, m2=43, key1=0, key2=1, r=64430.796875
+c values: m1=43, m2=54, key1=1, key2=2
+compute results: m1=43, m2=54, key1=1, key2=2, r=57495.964844
+c values: m1=54, m2=43, key1=2, key2=1
+compute results: m1=54, m2=43, key1=2, key2=1, r=69482.328125
+c values: m1=43, m2=56, key1=1, key2=3
+compute results: m1=43, m2=56, key1=1, key2=3, r=61239.093750
+c values: m1=56, m2=43, key1=3, key2=1
+compute results: m1=56, m2=43, key1=3, key2=1, r=76222.390625
+c values: m1=43, m2=37, key1=1, key2=4
+compute results: m1=43, m2=37, key1=1, key2=4, r=24118.193359
+c values: m1=37, m2=43, key1=4, key2=1
+compute results: m1=37, m2=43, key1=4, key2=1, r=21327.826172
+c values: m1=43, m2=49, key1=1, key2=5
+compute results: m1=43, m2=49, key1=1, key2=5, r=43353.933594
+c values: m1=49, m2=43, key1=5, key2=1
+compute results: m1=49, m2=43, key1=5, key2=1, r=48243.996094
+c values: m1=43, m2=63, key1=1, key2=6
+compute results: m1=43, m2=63, key1=1, key2=6, r=76122.281250
+c values: m1=63, m2=43, key1=6, key2=1
+compute results: m1=63, m2=43, key1=6, key2=1, r=104166.968750
+c values: m1=43, m2=18, key1=1, key2=7
+compute results: m1=43, m2=18, key1=1, key2=7, r=5429.181641
+c values: m1=18, m2=43, key1=7, key2=1
+compute results: m1=18, m2=43, key1=7, key2=1, r=2704.937256
+c values: m1=43, m2=58, key1=1, key2=8
+compute results: m1=43, m2=58, key1=1, key2=8, r=60035.625000
+c values: m1=58, m2=43, key1=8, key2=1
+compute results: m1=58, m2=43, key1=8, key2=1, r=76519.796875
+c values: m1=43, m2=62, key1=1, key2=9
+compute results: m1=43, m2=62, key1=1, key2=9, r=69031.875000
+c values: m1=62, m2=43, key1=9, key2=1
+compute results: m1=62, m2=43, key1=9, key2=1, r=92825.507812
+c values: m1=54, m2=52, key1=2, key2=0
+compute results: m1=54, m2=52, key1=2, key2=0, r=104589.414062
+c values: m1=52, m2=54, key1=0, key2=2
+compute results: m1=52, m2=54, key1=0, key2=2, r=101345.593750
+c values: m1=54, m2=43, key1=2, key2=1
+compute results: m1=54, m2=43, key1=2, key2=1, r=69482.328125
+c values: m1=43, m2=54, key1=1, key2=2
+compute results: m1=43, m2=54, key1=1, key2=2, r=57495.964844
+c values: m1=54, m2=56, key1=2, key2=3
+compute results: m1=54, m2=56, key1=2, key2=3, r=116143.078125
+c values: m1=56, m2=54, key1=3, key2=2
+compute results: m1=56, m2=54, key1=3, key2=2, r=119686.703125
+c values: m1=54, m2=37, key1=2, key2=4
+compute results: m1=54, m2=37, key1=2, key2=4, r=48341.953125
+c values: m1=37, m2=54, key1=4, key2=2
+compute results: m1=37, m2=54, key1=4, key2=2, r=35449.945312
+c values: m1=54, m2=49, key1=2, key2=5
+compute results: m1=54, m2=49, key1=2, key2=5, r=83956.468750
+c values: m1=49, m2=54, key1=5, key2=2
+compute results: m1=49, m2=54, key1=5, key2=2, r=77541.289062
+c values: m1=54, m2=63, key1=2, key2=6
+compute results: m1=54, m2=63, key1=2, key2=6, r=143024.859375
+c values: m1=63, m2=54, key1=6, key2=2
+compute results: m1=63, m2=54, key1=6, key2=2, r=162270.656250
+c values: m1=54, m2=18, key1=2, key2=7
+compute results: m1=54, m2=18, key1=2, key2=7, r=12185.482422
+c values: m1=18, m2=54, key1=7, key2=2
+compute results: m1=18, m2=54, key1=7, key2=2, r=4984.467285
+c values: m1=54, m2=58, key1=2, key2=8
+compute results: m1=54, m2=58, key1=2, key2=8, r=114427.718750
+c values: m1=58, m2=54, key1=8, key2=2
+compute results: m1=58, m2=54, key1=8, key2=2, r=121248.125000
+c values: m1=54, m2=62, key1=2, key2=9
+compute results: m1=54, m2=62, key1=2, key2=9, r=130661.484375
+c values: m1=62, m2=54, key1=9, key2=2
+compute results: m1=62, m2=54, key1=9, key2=2, r=146099.718750
+c values: m1=56, m2=52, key1=3, key2=0
+compute results: m1=56, m2=52, key1=3, key2=0, r=114470.859375
+c values: m1=52, m2=56, key1=0, key2=3
+compute results: m1=52, m2=56, key1=0, key2=3, r=107625.265625
+c values: m1=56, m2=43, key1=3, key2=1
+compute results: m1=56, m2=43, key1=3, key2=1, r=76222.390625
+c values: m1=43, m2=56, key1=1, key2=3
+compute results: m1=43, m2=56, key1=1, key2=3, r=61239.093750
+c values: m1=56, m2=54, key1=3, key2=2
+compute results: m1=56, m2=54, key1=3, key2=2, r=119686.703125
+c values: m1=54, m2=56, key1=2, key2=3
+compute results: m1=54, m2=56, key1=2, key2=3, r=116143.078125
+c values: m1=56, m2=37, key1=3, key2=4
+compute results: m1=56, m2=37, key1=3, key2=4, r=53193.156250
+c values: m1=37, m2=56, key1=4, key2=3
+compute results: m1=37, m2=56, key1=4, key2=3, r=37901.507812
+c values: m1=56, m2=49, key1=3, key2=5
+compute results: m1=56, m2=49, key1=3, key2=5, r=92110.171875
+c values: m1=49, m2=56, key1=5, key2=3
+compute results: m1=49, m2=56, key1=5, key2=3, r=82607.109375
+c values: m1=56, m2=63, key1=3, key2=6
+compute results: m1=56, m2=63, key1=3, key2=6, r=156492.531250
+c values: m1=63, m2=56, key1=6, key2=3
+compute results: m1=63, m2=56, key1=6, key2=3, r=172287.125000
+c values: m1=56, m2=18, key1=3, key2=7
+compute results: m1=56, m2=18, key1=3, key2=7, r=13559.598633
+c values: m1=18, m2=56, key1=7, key2=3
+compute results: m1=18, m2=56, key1=7, key2=3, r=5396.466797
+c values: m1=56, m2=58, key1=3, key2=8
+compute results: m1=56, m2=58, key1=3, key2=8, r=125414.351562
+c values: m1=58, m2=56, key1=8, key2=3
+compute results: m1=58, m2=56, key1=8, key2=3, r=129019.609375
+c values: m1=56, m2=62, key1=3, key2=9
+compute results: m1=56, m2=62, key1=3, key2=9, r=143130.156250
+c values: m1=62, m2=56, key1=9, key2=3
+compute results: m1=62, m2=56, key1=9, key2=3, r=155364.781250
+c values: m1=37, m2=52, key1=4, key2=0
+compute results: m1=37, m2=52, key1=4, key2=0, r=33777.792969
+c values: m1=52, m2=37, key1=0, key2=4
+compute results: m1=52, m2=37, key1=0, key2=4, r=44754.136719
+c values: m1=37, m2=43, key1=4, key2=1
+compute results: m1=37, m2=43, key1=4, key2=1, r=21327.826172
+c values: m1=43, m2=37, key1=1, key2=4
+compute results: m1=43, m2=37, key1=1, key2=4, r=24118.193359
+c values: m1=37, m2=54, key1=4, key2=2
+compute results: m1=37, m2=54, key1=4, key2=2, r=35449.945312
+c values: m1=54, m2=37, key1=2, key2=4
+compute results: m1=54, m2=37, key1=2, key2=4, r=48341.953125
+c values: m1=37, m2=56, key1=4, key2=3
+compute results: m1=37, m2=56, key1=4, key2=3, r=37901.507812
+c values: m1=56, m2=37, key1=3, key2=4
+Check SEND: m1=56, m2=37, key1=3, key2=4
+Check SEND: m1=37, m2=49, key1=4, key2=5
+Check SEND: m1=49, m2=37, key1=5, key2=4
+Check SEND: m1=37, m2=63, key1=4, key2=6
+Check SEND: m1=63, m2=37, key1=6, key2=4
+Check SEND: m1=37, m2=18, key1=4, key2=7
+Check SEND: m1=18, m2=37, key1=7, key2=4
+Check SEND: m1=37, m2=58, key1=4, key2=8
+Check SEND: m1=58, m2=37, key1=8, key2=4
+Check SEND: m1=37, m2=62, key1=4, key2=9
+Check SEND: m1=62, m2=37, key1=9, key2=4
+Check SEND: m1=49, m2=52, key1=5, key2=0
+Check SEND: m1=52, m2=49, key1=0, key2=5
+Check SEND: m1=49, m2=43, key1=5, key2=1
+Check SEND: m1=43, m2=49, key1=1, key2=5
+Check SEND: m1=49, m2=54, key1=5, key2=2
+Check SEND: m1=54, m2=49, key1=2, key2=5
+Check SEND: m1=49, m2=56, key1=5, key2=3
+Check SEND: m1=56, m2=49, key1=3, key2=5
+Check SEND: m1=49, m2=37, key1=5, key2=4
+Check SEND: m1=37, m2=49, key1=4, key2=5
+Check SEND: m1=49, m2=63, key1=5, key2=6
+Check SEND: m1=63, m2=49, key1=6, key2=5
+Check SEND: m1=49, m2=18, key1=5, key2=7
+Check SEND: m1=18, m2=49, key1=7, key2=5
+Check SEND: m1=49, m2=58, key1=5, key2=8
+Check SEND: m1=58, m2=49, key1=8, key2=5
+Check SEND: m1=49, m2=62, key1=5, key2=9
+Check SEND: m1=62, m2=49, key1=9, key2=5
+Check SEND: m1=63, m2=52, key1=6, key2=0
+Check SEND: m1=52, m2=63, key1=0, key2=6
+Check SEND: m1=63, m2=43, key1=6, key2=1
+Check SEND: m1=43, m2=63, key1=1, key2=6
+Check SEND: m1=63, m2=54, key1=6, key2=2
+Check SEND: m1=54, m2=63, key1=2, key2=6
+Check SEND: m1=63, m2=56, key1=6, key2=3
+Check SEND: m1=56, m2=63, key1=3, key2=6
+Check SEND: m1=63, m2=37, key1=6, key2=4
+Check SEND: m1=37, m2=63, key1=4, key2=6
+Check SEND: m1=63, m2=49, key1=6, key2=5
+Check SEND: m1=49, m2=63, key1=5, key2=6
+Check SEND: m1=63, m2=18, key1=6, key2=7
+Check SEND: m1=18, m2=63, key1=7, key2=6
+Check SEND: m1=63, m2=58, key1=6, key2=8
+Check SEND: m1=58, m2=63, key1=8, key2=6
+Check SEND: m1=63, m2=62, key1=6, key2=9
+Check SEND: m1=62, m2=63, key1=9, key2=6
+Check SEND: m1=18, m2=52, key1=7, key2=0
+Check SEND: m1=52, m2=18, key1=0, key2=7
+Check SEND: m1=18, m2=43, key1=7, key2=1
+Check SEND: m1=43, m2=18, key1=1, key2=7
+Check SEND: m1=18, m2=54, key1=7, key2=2
+Check SEND: m1=54, m2=18, key1=2, key2=7
+Check SEND: m1=18, m2=56, key1=7, key2=3
+Check SEND: m1=56, m2=18, key1=3, key2=7
+Check SEND: m1=18, m2=37, key1=7, key2=4
+Check SEND: m1=37, m2=18, key1=4, key2=7
+Check SEND: m1=18, m2=49, key1=7, key2=5
+Check SEND: m1=49, m2=18, key1=5, key2=7
+compute results: m1=56, m2=37, key1=3, key2=4, r=53193.156250
+c values: m1=37, m2=49, key1=4, key2=5
+Check SEND: m1=18, m2=63, key1=7, key2=6
+Check SEND: m1=63, m2=18, key1=6, key2=7
+Check SEND: m1=18, m2=58, key1=7, key2=8
+Check SEND: m1=58, m2=18, key1=8, key2=7
+Check SEND: m1=18, m2=62, key1=7, key2=9
+Check SEND: m1=62, m2=18, key1=9, key2=7
+Check SEND: m1=58, m2=52, key1=8, key2=0
+Check SEND: m1=52, m2=58, key1=0, key2=8
+Check SEND: m1=58, m2=43, key1=8, key2=1
+Check SEND: m1=43, m2=58, key1=1, key2=8
+Check SEND: m1=58, m2=54, key1=8, key2=2
+Check SEND: m1=54, m2=58, key1=2, key2=8
+Check SEND: m1=58, m2=56, key1=8, key2=3
+Check SEND: m1=56, m2=58, key1=3, key2=8
+Check SEND: m1=58, m2=37, key1=8, key2=4
+Check SEND: m1=37, m2=58, key1=4, key2=8
+Check SEND: m1=58, m2=49, key1=8, key2=5
+Check SEND: m1=49, m2=58, key1=5, key2=8
+Check SEND: m1=58, m2=63, key1=8, key2=6
+Check SEND: m1=63, m2=58, key1=6, key2=8
+Check SEND: m1=58, m2=18, key1=8, key2=7
+Check SEND: m1=18, m2=58, key1=7, key2=8
+Check SEND: m1=58, m2=62, key1=8, key2=9
+Check SEND: m1=62, m2=58, key1=9, key2=8
+Check SEND: m1=62, m2=52, key1=9, key2=0
+Check SEND: m1=52, m2=62, key1=0, key2=9
+Check SEND: m1=62, m2=43, key1=9, key2=1
+Check SEND: m1=43, m2=62, key1=1, key2=9
+Check SEND: m1=62, m2=54, key1=9, key2=2
+Check SEND: m1=54, m2=62, key1=2, key2=9
+Check SEND: m1=62, m2=56, key1=9, key2=3
+Check SEND: m1=56, m2=62, key1=3, key2=9
+Check SEND: m1=62, m2=37, key1=9, key2=4
+Check SEND: m1=37, m2=62, key1=4, key2=9
+Check SEND: m1=62, m2=49, key1=9, key2=5
+compute results: m1=37, m2=49, key1=4, key2=5, r=26301.769531
+c values: m1=49, m2=37, key1=5, key2=4
+Check SEND: m1=49, m2=62, key1=5, key2=9
+Check SEND: m1=62, m2=63, key1=9, key2=6
+Check SEND: m1=63, m2=62, key1=6, key2=9
+compute results: m1=49, m2=37, key1=5, key2=4, r=32966.750000
+c values: m1=37, m2=63, key1=4, key2=6
+compute results: m1=37, m2=63, key1=4, key2=6, r=47706.718750
+c values: m1=63, m2=37, key1=6, key2=4
+compute results: m1=63, m2=37, key1=6, key2=4, r=73462.398438
+c values: m1=37, m2=18, key1=4, key2=7
+compute results: m1=37, m2=18, key1=4, key2=7, r=2801.503418
+c values: m1=18, m2=37, key1=7, key2=4
+compute results: m1=18, m2=37, key1=7, key2=4, r=1617.765381 
+c values: m1=37, m2=58, key1=4, key2=8
+compute results: m1=37, m2=58, key1=4, key2=8, r=37151.828125
+c values: m1=58, m2=37, key1=8, key2=4
+compute results: m1=58, m2=37, key1=8, key2=4, r=53186.093750
+c values: m1=37, m2=62, key1=4, key2=9
+compute results: m1=37, m2=62, key1=4, key2=9, r=43060.660156
+c values: m1=62, m2=37, key1=9, key2=4
+compute results: m1=62, m2=37, key1=9, key2=4, r=64993.968750
+c values: m1=49, m2=52, key1=5, key2=0
+compute results: m1=49, m2=52, key1=5, key2=0, r=74008.937500
+c values: m1=52, m2=49, key1=0, key2=5
+compute results: m1=52, m2=49, key1=0, key2=5, r=77723.226562
+c values: m1=49, m2=43, key1=5, key2=1
+compute results: m1=49, m2=43, key1=5, key2=1, r=48243.996094
+c values: m1=43, m2=49, key1=1, key2=5
+compute results: m1=43, m2=49, key1=1, key2=5, r=43353.933594
+c values: m1=49, m2=54, key1=5, key2=2
+compute results: m1=49, m2=54, key1=5, key2=2, r=77541.289062
+c values: m1=54, m2=49, key1=2, key2=5
+compute results: m1=54, m2=49, key1=2, key2=5, r=83956.468750
+c values: m1=49, m2=56, key1=5, key2=3
+compute results: m1=49, m2=56, key1=5, key2=3, r=82607.109375
+c values: m1=56, m2=49, key1=3, key2=5
+compute results: m1=56, m2=49, key1=3, key2=5, r=92110.171875
+c values: m1=49, m2=37, key1=5, key2=4
+compute results: m1=49, m2=37, key1=5, key2=4, r=32966.750000
+c values: m1=37, m2=49, key1=4, key2=5
+compute results: m1=37, m2=49, key1=4, key2=5, r=26301.769531
+c values: m1=49, m2=63, key1=5, key2=6
+compute results: m1=49, m2=63, key1=5, key2=6, r=102688.484375
+c values: m1=63, m2=49, key1=6, key2=5
+compute results: m1=63, m2=49, key1=6, key2=5, r=125823.796875
+c values: m1=49, m2=18, key1=5, key2=7
+compute results: m1=49, m2=18, key1=5, key2=7, r=7683.084961
+c values: m1=18, m2=49, key1=7, key2=5
+compute results: m1=18, m2=49, key1=7, key2=5, r=3493.223877
+c values: m1=49, m2=58, key1=5, key2=8
+compute results: m1=49, m2=58, key1=5, key2=8, r=81392.445312
+c values: m1=58, m2=49, key1=8, key2=5
+compute results: m1=58, m2=49, key1=8, key2=5, r=93112.500000
+c values: m1=49, m2=62, key1=5, key2=9
+compute results: m1=49, m2=62, key1=5, key2=9, r=93493.031250
+c values: m1=62, m2=49, key1=9, key2=5
+compute results: m1=62, m2=49, key1=9, key2=5, r=112767.468750
+c values: m1=63, m2=52, key1=6, key2=0
+compute results: m1=63, m2=52, key1=6, key2=0, r=155118.515625
+c values: m1=52, m2=63, key1=0, key2=6
+compute results: m1=52, m2=63, key1=0, key2=6, r=132418.656250
+c values: m1=63, m2=43, key1=6, key2=1
+compute results: m1=63, m2=43, key1=6, key2=1, r=104166.968750
+c values: m1=43, m2=63, key1=1, key2=6
+compute results: m1=43, m2=63, key1=1, key2=6, r=76122.281250
+c values: m1=63, m2=54, key1=6, key2=2
+compute results: m1=63, m2=54, key1=6, key2=2, r=162270.656250
+c values: m1=54, m2=63, key1=2, key2=6
+compute results: m1=54, m2=63, key1=2, key2=6, r=143024.859375
+c values: m1=63, m2=56, key1=6, key2=3
+compute results: m1=63, m2=56, key1=6, key2=3, r=172287.125000
+c values: m1=56, m2=63, key1=3, key2=6
+compute results: m1=56, m2=63, key1=3, key2=6, r=156492.531250
+c values: m1=63, m2=37, key1=6, key2=4
+compute results: m1=63, m2=37, key1=6, key2=4, r=73462.398438
+c values: m1=37, m2=63, key1=4, key2=6
+compute results: m1=37, m2=63, key1=4, key2=6, r=47706.718750
+c values: m1=63, m2=49, key1=6, key2=5
+compute results: m1=63, m2=49, key1=6, key2=5, r=125823.796875
+c values: m1=49, m2=63, key1=5, key2=6
+compute results: m1=49, m2=63, key1=5, key2=6, r=102688.484375
+c values: m1=63, m2=18, key1=6, key2=7
+compute results: m1=63, m2=18, key1=6, key2=7, r=19459.332031
+c values: m1=18, m2=63, key1=7, key2=6
+compute results: m1=18, m2=63, key1=7, key2=6, r=7073.519043
+c values: m1=63, m2=58, key1=6, key2=8
+compute results: m1=63, m2=58, key1=6, key2=8, r=170600.125000
+c values: m1=58, m2=63, key1=8, key2=6
+compute results: m1=58, m2=63, key1=8, key2=6, r=159669.171875
+c values: m1=63, m2=62, key1=6, key2=9
+compute results: m1=63, m2=62, key1=6, key2=9, r=194291.031250
+c values: m1=62, m2=63, key1=9, key2=6
+compute results: m1=62, m2=63, key1=9, key2=6, r=191823.156250
+c values: m1=18, m2=52, key1=7, key2=0
+compute results: m1=18, m2=52, key1=7, key2=0, r=4702.508789
+c values: m1=52, m2=18, key1=0, key2=7
+compute results: m1=52, m2=18, key1=0, key2=7, r=11228.271484
+c values: m1=18, m2=43, key1=7, key2=1
+compute results: m1=18, m2=43, key1=7, key2=1, r=2704.937256
+c values: m1=43, m2=18, key1=1, key2=7
+compute results: m1=43, m2=18, key1=1, key2=7, r=5429.181641
+c values: m1=18, m2=54, key1=7, key2=2
+compute results: m1=18, m2=54, key1=7, key2=2, r=4984.467285
+c values: m1=54, m2=18, key1=2, key2=7
+compute results: m1=54, m2=18, key1=2, key2=7, r=12185.482422
+c values: m1=18, m2=56, key1=7, key2=3
+compute results: m1=18, m2=56, key1=7, key2=3, r=5396.466797
+c values: m1=56, m2=18, key1=3, key2=7
+compute results: m1=56, m2=18, key1=3, key2=7, r=13559.598633
+c values: m1=18, m2=37, key1=7, key2=4
+compute results: m1=18, m2=37, key1=7, key2=4, r=1617.765381
+c values: m1=37, m2=18, key1=4, key2=7
+compute results: m1=37, m2=18, key1=4, key2=7, r=2801.503418
+c values: m1=18, m2=49, key1=7, key2=5
+compute results: m1=18, m2=49, key1=7, key2=5, r=3493.223877
+c values: m1=49, m2=18, key1=5, key2=7
+compute results: m1=49, m2=18, key1=5, key2=7, r=7683.084961
+c values: m1=18, m2=63, key1=7, key2=6
+compute results: m1=18, m2=63, key1=7, key2=6, r=7073.519043 
+c values: m1=63, m2=18, key1=6, key2=7
+compute results: m1=63, m2=18, key1=6, key2=7, r=19459.332031
+c values: m1=18, m2=58, key1=7, key2=8
+compute results: m1=18, m2=58, key1=7, key2=8, r=5277.219727
+c values: m1=58, m2=18, key1=8, key2=7
+compute results: m1=58, m2=18, key1=8, key2=7, r=13259.299805
+c values: m1=18, m2=62, key1=7, key2=9
+compute results: m1=18, m2=62, key1=7, key2=9, r=6278.727539
+c values: m1=62, m2=18, key1=9, key2=7
+compute results: m1=62, m2=18, key1=9, key2=7, r=16671.562500
+c values: m1=58, m2=52, key1=8, key2=0
+compute results: m1=58, m2=52, key1=8, key2=0, r=115704.007812
+c values: m1=52, m2=58, key1=0, key2=8
+compute results: m1=52, m2=58, key1=0, key2=8, r=105840.515625
+c values: m1=58, m2=43, key1=8, key2=1
+compute results: m1=58, m2=43, key1=8, key2=1, r=76519.796875
+c values: m1=43, m2=58, key1=1, key2=8
+compute results: m1=43, m2=58, key1=1, key2=8, r=60035.625000
+c values: m1=58, m2=54, key1=8, key2=2
+compute results: m1=58, m2=54, key1=8, key2=2, r=121248.125000
+c values: m1=54, m2=58, key1=2, key2=8
+compute results: m1=54, m2=58, key1=2, key2=8, r=114427.718750
+c values: m1=58, m2=56, key1=8, key2=3
+compute results: m1=58, m2=56, key1=8, key2=3, r=129019.609375
+c values: m1=56, m2=58, key1=3, key2=8
+compute results: m1=56, m2=58, key1=3, key2=8, r=125414.351562
+c values: m1=58, m2=37, key1=8, key2=4
+compute results: m1=58, m2=37, key1=8, key2=4, r=53186.093750
+c values: m1=37, m2=58, key1=4, key2=8
+compute results: m1=37, m2=58, key1=4, key2=8, r=37151.828125
+c values: m1=58, m2=49, key1=8, key2=5
+compute results: m1=58, m2=49, key1=8, key2=5, r=93112.500000
+c values: m1=49, m2=58, key1=5, key2=8
+compute results: m1=49, m2=58, key1=5, key2=8, r=81392.445312
+c values: m1=58, m2=63, key1=8, key2=6
+compute results: m1=58, m2=63, key1=8, key2=6, r=159669.171875
+c values: m1=63, m2=58, key1=6, key2=8
+compute results: m1=63, m2=58, key1=6, key2=8, r=170600.125000
+c values: m1=58, m2=18, key1=8, key2=7
+compute results: m1=58, m2=18, key1=8, key2=7, r=13259.299805
+c values: m1=18, m2=58, key1=7, key2=8
+compute results: m1=18, m2=58, key1=7, key2=8, r=5277.219727
+c values: m1=58, m2=62, key1=8, key2=9
+compute results: m1=58, m2=62, key1=8, key2=9, r=146152.953125
+c values: m1=62, m2=58, key1=9, key2=8
+compute results: m1=62, m2=58, key1=9, key2=8, r=154055.109375
+c values: m1=62, m2=52, key1=9, key2=0
+compute results: m1=62, m2=52, key1=9, key2=0, r=139436.015625
+c values: m1=52, m2=62, key1=0, key2=9
+compute results: m1=52, m2=62, key1=0, key2=9, r=120834.679688
+c values: m1=62, m2=43, key1=9, key2=1
+compute results: m1=62, m2=43, key1=9, key2=1, r=92825.507812
+c values: m1=43, m2=62, key1=1, key2=9
+compute results: m1=43, m2=62, key1=1, key2=9, r=69031.875000
+c values: m1=62, m2=54, key1=9, key2=2
+compute results: m1=62, m2=54, key1=9, key2=2, r=146099.718750
+c values: m1=54, m2=62, key1=2, key2=9
+compute results: m1=54, m2=62, key1=2, key2=9, r=130661.484375
+c values: m1=62, m2=56, key1=9, key2=3
+compute results: m1=62, m2=56, key1=9, key2=3, r=155364.781250
+c values: m1=56, m2=62, key1=3, key2=9
+compute results: m1=56, m2=62, key1=3, key2=9, r=143130.156250
+c values: m1=62, m2=37, key1=9, key2=4
+compute results: m1=62, m2=37, key1=9, key2=4, r=64993.968750
+c values: m1=37, m2=62, key1=4, key2=9
+compute results: m1=37, m2=62, key1=4, key2=9, r=43060.660156
+c values: m1=62, m2=49, key1=9, key2=5
+compute results: m1=62, m2=49, key1=9, key2=5, r=112767.468750
+c values: m1=49, m2=62, key1=5, key2=9
+compute results: m1=49, m2=62, key1=5, key2=9, r=93493.031250
+c values: m1=62, m2=63, key1=9, key2=6
+compute results: m1=62, m2=63, key1=9, key2=6, r=191823.156250
+c values: m1=63, m2=62, key1=6, key2=9
+compute results: m1=63, m2=62, key1=6, key2=9, r=194291.031250
+c values: m1=62, m2=18, key1=9, key2=7
+Check SEND: m1=62, m2=18, key1=9, key2=7
+Check SEND: m1=18, m2=62, key1=7, key2=9
+Check SEND: m1=62, m2=58, key1=9, key2=8
+Check SEND: m1=58, m2=62, key1=8, key2=9
+c values: m1=58, m2=62, key1=-1, key2=9
+NODE V[h]: h: 0 , V[h]:0.000000
+NODE V[h]: h: 1 , V[h]:0.000000
+NODE V[h]: h: 2 , V[h]:0.000000
+c values: m1=58, m2=62, key1=-1, key2=9
+NODE V[h]: h: 0 , V[h]:0.000000
+NODE V[h]: h: 1 , V[h]:0.000000
+NODE V[h]: h: 2 , V[h]:0.000000
+NODE V[h]: h: 3 , V[h]:0.000000
+NODE V[h]: h: 4 , V[h]:0.000000
+NODE V[h]: h: 5 , V[h]:0.000000
+NODE V[h]: h: 6 , V[h]:0.000000
+TEMPV RECV --> h: 0 , temp[h]:0.000000
+TEMPV RECV --> h: 1 , temp[h]:0.000000
+TEMPV RECV --> h: 2 , temp[h]:0.000000
+TEMPV RECV --> h: 3 , temp[h]:0.000000
+TEMPV RECV --> h: 4 , temp[h]:0.000000
+TEMPV RECV --> h: 5 , temp[h]:0.000000
+TEMPV RECV --> h: 6 , temp[h]:0.000000
+TEMPV RECV --> h: 7 , temp[h]:0.000000
+TEMPV RECV --> h: 8 , temp[h]:0.000000
+TEMPV RECV --> h: 9 , temp[h]:0.000000
+NODE V[h]: h: 3 , V[h]:0.000000
+NODE V[h]: h: 4 , V[h]:0.000000
+NODE V[h]: h: 5 , V[h]:0.000000
+NODE V[h]: h: 6 , V[h]:0.000000
+NODE V[h]: h: 7 , V[h]:0.000000
+NODE V[h]: h: 8 , V[h]:0.000000
+NODE V[h]: h: 9 , V[h]:0.000000
+NODE V[h]: h: 7 , V[h]:0.000000
+NODE V[h]: h: 8 , V[h]:0.000000
+NODE V[h]: h: 9 , V[h]:0.000000
+compute results: m1=62, m2=18, key1=9, key2=7, r=16671.562500
+c values: m1=18, m2=62, key1=7, key2=9
+compute results: m1=18, m2=62, key1=7, key2=9, r=6278.727539
+c values: m1=62, m2=58, key1=9, key2=8
+TEMPV RECV --> h: 0 , temp[h]:0.000000
+TEMPV RECV --> h: 1 , temp[h]:0.000000
+TEMPV RECV --> h: 2 , temp[h]:0.000000
+TEMPV RECV --> h: 3 , temp[h]:0.000000
+TEMPV RECV --> h: 4 , temp[h]:0.000000
+TEMPV RECV --> h: 5 , temp[h]:0.000000
+TEMPV RECV --> h: 6 , temp[h]:0.000000
+TEMPV RECV --> h: 7 , temp[h]:0.000000
+TEMPV RECV --> h: 8 , temp[h]:0.000000
+TEMPV RECV --> h: 9 , temp[h]:0.000000
+compute results: m1=62, m2=58, key1=9, key2=8, r=154055.109375
+c values: m1=58, m2=62, key1=8, key2=9
+compute results: m1=58, m2=62, key1=8, key2=9, r=146152.953125
+c values: m1=58, m2=62, key1=-1, key2=9
+NODE V[h]: h: 0 , V[h]:1532402.125000
+NODE V[h]: h: 1 , V[h]:903555.812500
+NODE V[h]: h: 2 , V[h]:1645625.875000
+TEMPV RECV --> h: 0 , temp[h]:1532402.125000
+TEMPV RECV --> h: 1 , temp[h]:903555.812500
+TEMPV RECV --> h: 2 , temp[h]:1645625.875000
+TEMPV RECV --> h: 3 , temp[h]:1788559.750000
+TEMPV RECV --> h: 4 , temp[h]:570959.125000
+TEMPV RECV --> h: 5 , temp[h]:1201250.125000
+NODE V[h]: h: 3 , V[h]:1788559.750000
+NODE V[h]: h: 4 , V[h]:570959.125000
+NODE V[h]: h: 5 , V[h]:1201250.125000
+NODE V[h]: h: 6 , V[h]:2354959.750000
+NODE V[h]: h: 7 , V[h]:83057.671875
+NODE V[h]: h: 8 , V[h]:1815743.125000
+NODE V[h]: h: 9 , V[h]:2148074.500000
+TEMPV RECV --> h: 6 , temp[h]:2354959.750000
+TEMPV RECV --> h: 7 , temp[h]:83057.671875
+TEMPV RECV --> h: 8 , temp[h]:1815743.125000
+TEMPV RECV --> h: 9 , temp[h]:2148074.500000
+key 0 : 1893833.250000
+key 1 : 1082285.125000
+key 2 : 1772858.250000
+key 3 : 2083194.250000
+key 4 : 940424.000000
+key 5 : 1439586.500000
+key 6 : 2643622.000000
+key 7 : 514185.750000
+key 8 : 2146749.250000
+key 9 : 2382685.500000
