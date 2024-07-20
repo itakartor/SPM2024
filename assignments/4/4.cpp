@@ -36,7 +36,7 @@ struct keypair{
 //the struct used for send information to nodes for run the compute method
 struct computation{
 	long m_1, m_2, key1, key2;
-	float result;
+	double result;
 };
 
 long random(const int &min, const int &max) {
@@ -48,18 +48,18 @@ long random(const int &min, const int &max) {
 void init(auto& M, const long c1, const long c2, const long key) {
 	for(long i=0;i<c1;++i)
 		for(long j=0;j<c2;++j)
-			M[i][j] = (key-i-j)/static_cast<float>(SIZE);
+			M[i][j] = (key-i-j)/static_cast<double>(SIZE);
 }
 
 // matrix multiplication:  C = A x B  A[c1][c2] B[c2][c1] C[c1][c1]
 // mm returns the sum of the elements of the C matrix
-auto mm(const auto& A, const auto& B, const long c1,const long c2) {
+double mm(const auto& A, const auto& B, const long c1,const long c2) {
 
-	float sum{0};
+	double sum{0};
 	
     for (long i = 0; i < c1; i++) {
         for (long j = 0; j < c1; j++) {
-            auto accum = float(0.0);
+            auto accum = double(0.0);
             for (long k = 0; k < c2; k++)
                 accum += A[i][k] * B[k][j];
             sum += accum;
@@ -71,10 +71,10 @@ auto mm(const auto& A, const auto& B, const long c1,const long c2) {
 // initialize two matrices with the computed values of the keys
 // and execute a matrix multiplication between the two matrices
 // to obtain the sum of the elements of the result matrix 
-float compute(const long c1, const long c2, long key1, long key2) {
+double compute(const long c1, const long c2, long key1, long key2) {
 
-	std::vector<std::vector<float>> A(c1, std::vector<float>(c2,0.0)); // c1 * c2
-	std::vector<std::vector<float>> B(c2, std::vector<float>(c1,0.0)); // c2 * c1
+	std::vector<std::vector<double>> A(c1, std::vector<double>(c2,0.0)); // c1 * c2
+	std::vector<std::vector<double>> B(c2, std::vector<double>(c1,0.0)); // c2 * c1
 
 	init(A, c1, c2, key1);
 	init(B, c2, c1, key2);
@@ -125,10 +125,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	
-	std::vector<float> V(nkeys, 0);
+	std::vector<double> V(nkeys, 0);
 	std::vector<keypair> queueKeys;
-	// bool resetkey1=false;
-	// bool resetkey2=false;
 
 	//KEYS DATATYPE
 	int blockLengths_k[1] = {2};
@@ -147,7 +145,7 @@ int main(int argc, char* argv[]) {
 	MPI_Aint lb_c, extent_c;
 	MPI_Type_get_extent(MPI_LONG, &lb_c, &extent_c); 
 	MPI_Aint disp_c[2] = {0, 4*extent_c};
-	MPI_Datatype types_c[2] = {MPI_LONG, MPI_FLOAT}; 
+	MPI_Datatype types_c[2] = {MPI_LONG, MPI_DOUBLE}; 
 
 	// Create the datatype for the parameters
 	MPI_Datatype compType;
@@ -156,22 +154,17 @@ int main(int argc, char* argv[]) {
 
 	computation c;
 
-	//MPI_Request req;
-	MPI_Request rq_send;
-	//MPI_Status status;
-
 	double start = MPI_Wtime();
 
 	//START MAP FILLING
 	// first section
 	if(myId) { // i am a working node1
-
+		int nReset = 0;
 		bool check = true;
 		while(check){
-			// if(debug){
-			// 	std::cout << "hello, i am the node " << myId << " and i am waiting to receive a message" << std::endl;
-			// }
-			//MPI_Irecv(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv);
+			if(debug){
+				std::cout << "hello, i am the node " << myId << " and i am waiting to receive a message" << std::endl;
+			}
 			MPI_Recv(&c, 1, compType, 0, KEY_GENERATOR, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			if(debug && (c.m_1 != 0 || c.m_2 != 0)){
 				printf("hello, i am the node %d and i have received the values: %ld, %ld, %ld, %ld\n", myId, c.key1, c.key2, c.m_1, c.m_2);
@@ -182,17 +175,15 @@ int main(int argc, char* argv[]) {
 				if(debug){
 					std::cout << myId << " is leaving" << std::endl;
 				}
-			} else if (c.m_1 != 0 && c.m_2 != 0) {
-
+			} else {
+				++nReset;
 				auto r = compute(c.m_1, c.m_2, c.key1, c.key2);
-				V[c.key1] += r;
+				V[c.key1] = V[c.key1] + r;
 				c.result = r;
-				c.key1 = c.key1;
-				//MPI_Send(&k, 1, keysType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
-				MPI_Isend(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
+				MPI_Send(&c, 1, compType, 0, COMPUTE_DATA, MPI_COMM_WORLD);
 
 				if(debug){
-					std::cout << "V[key1] " << V[c.key1] << " with key: " << c.key1 << std::endl << "r: "<< r << std::endl;	
+					printf("V[key1] %f with key: %ld  r: %f reset number: %d\n", V[c.key1], c.key1, r, nReset);
 				}
 			}	
 		} 
@@ -200,7 +191,7 @@ int main(int argc, char* argv[]) {
 			for(long i=0;i<nkeys; ++i) {
 				std::printf("key %ld : %f\n", i, V[i]);
 			}
-			std::cout << "END key generation for node " << myId << std::endl;
+			std::cout << "END key generation for node " << myId << "reset: "<<nReset<< std::endl;
 		} 
 		
 		// resetta 1
@@ -219,8 +210,6 @@ int main(int argc, char* argv[]) {
 				}
 			}
 
-			// std::cout<< "disabledKeys sono più di 1" << std::endl;
-
 			if(i<length){
 				++i;
 				key1 = random(0, nkeys-1);  // value in [0,nkeys[
@@ -228,20 +217,15 @@ int main(int argc, char* argv[]) {
 				if (key1 == key2) // only distinct values in the pair
 					key1 = (key1+1) % nkeys;
 
-				// qui devo controllare se una delle due chiavi è disabilitata se si metto in coda altrimenti aggiorno la mappa con tutte le conseguenze
 				tmpKey.key1 = key1;
 				tmpKey.key2 = key2;
 
 				queueKeys.emplace_back(tmpKey);
 				
 				// printf("hello, i am the node server and i am generating: %ld, %ld last elem: %ld \n", key1, key2, (*(queueKeys.end())).key1);
-			} else {
-				printf("[SERVER] i have generated all the pairs\n");
 			}
 
-			// MPI_Irecv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, &rq_recv); // && mapDisabledKeys[c.key1] && c.result != 0
 			if(disabledKeysNumber > 0) {
-				// MPI_Wait(&rq_recv, MPI_STATUS_IGNORE);
 				MPI_Recv(&c, 1, compType, MPI_ANY_SOURCE, COMPUTE_DATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				if(debug && (c.key1 == 80 || c.key1 == 93)){
 					printf("hello, i am the node server and i have received the values: %f, %ld\n", c.result, c.key1);
@@ -256,11 +240,8 @@ int main(int argc, char* argv[]) {
 			} 
 			if(!queueKeys.empty()) {
 				tmpKey2 = *(queueKeys.begin());
-				queueKeys.erase(queueKeys.begin());
-				if(mapDisabledKeys[tmpKey2.key1] || mapDisabledKeys[tmpKey2.key2]) {
-					queueKeys.emplace_back(tmpKey2);
-					// printf("hello, i am the node server the keys are disabled %ld, %ld\n", tmpKey2.key1, tmpKey2.key2);
-				} else {
+				if(!mapDisabledKeys[tmpKey2.key1] && !mapDisabledKeys[tmpKey2.key2]) {
+					queueKeys.erase(queueKeys.begin());
 					map[tmpKey2.key1]++;  // count the number of key1 keys
 					map[tmpKey2.key2]++;  // count the number of key2 keys
 
@@ -274,7 +255,7 @@ int main(int argc, char* argv[]) {
 						if(debug){
 							printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d \n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
 						}
-						MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
+						MPI_Send(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD);
 						++roundrobin;
 									
 						if(roundrobin>(numP-1)){
@@ -292,7 +273,7 @@ int main(int argc, char* argv[]) {
 						c.key2 = tmpKey2.key1;
 						++disabledKeysNumber;
 						mapDisabledKeys[tmpKey2.key2] = true;
-						MPI_Isend(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD, &rq_send);
+						MPI_Send(&c, 1, compType, roundrobin, KEY_GENERATOR, MPI_COMM_WORLD);
 						if(debug){
 							printf("hello, i am the node server and i have sent the values: %ld, %ld, %ld, %ld, round robin: %d\n", c.key1, c.key2, c.m_1, c.m_2, roundrobin);
 						}
@@ -306,11 +287,10 @@ int main(int argc, char* argv[]) {
 			if(debug){
 				std::cout << "i am a working node " << myId << " and i am sending " << c.key1 << " to " << g << std::endl;
 			}
-			// MPI_Isend(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 			MPI_Send(&c, 1, compType, g, KEY_GENERATOR, MPI_COMM_WORLD);	
 		} 
 		if(debug){
-			std::cout << "END key sharing and compute" << std::endl;
+			// std::cout << "END key sharing and compute" << std::endl;
 			for(long i=0;i<nkeys; ++i) {
 				std::printf("key %ld : %f\n", i, V[i]);
 			}
@@ -344,7 +324,6 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c1: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					// MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 					MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
 					++roundrobin;
 
@@ -364,7 +343,6 @@ int main(int argc, char* argv[]) {
 						std::cout << "PRINT OF c2: key1 = " << c.key1 << " key2= " << c.key2 << " m1= " << c.m_1 << " m2= " << c.m_2 << std::endl;
 					}
 
-					// MPI_Isend(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 					MPI_Send(&c, 1, compType, roundrobin, COMPUTE_DATA, MPI_COMM_WORLD);
 					++roundrobin;
 
@@ -383,22 +361,17 @@ int main(int argc, char* argv[]) {
 			if(debug2){
 				std::cout << "i am a working node " << myId << " and i am sending " << c.key1 << " to " << g << std::endl;
 			}
-			// MPI_Isend(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD, &rq_send);
 			MPI_Send(&c, 1, compType, g, COMPUTE_DATA, MPI_COMM_WORLD);	
 		}
 		
-		std::vector<float> tempV(nkeys, 0);
-		std::vector<std::vector<float>> tempVV;
+		std::vector<double> tempV(nkeys, 0);
+		std::vector<std::vector<double>> tempVV;
 		for(int j=0; j<(numP-1); j++){
-			MPI_Recv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//MPI_Irecv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &rq_recv);
+			MPI_Recv(tempV.data(), nkeys, MPI_DOUBLE, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			tempVV.emplace_back(tempV);
-			//MPI_Wait(&rq_recv, &status);
 		}
 
 		for(int j=0; j<(numP-1); j++) { // i have to merge the vector in only one
-			// MPI_Irecv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, &req);
-			// MPI_Recv(tempV.data(), nkeys, MPI_FLOAT, MPI_ANY_SOURCE, SEND_VECTOR_V, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			for(int i=0; i<nkeys;i++){
 				if(debug2){
 					std::cout << "V[i]: " << V[i] <<" temp: "<<tempV[i] << std::endl;
@@ -406,7 +379,6 @@ int main(int argc, char* argv[]) {
 				if(!tempVV[j].empty()){
 					V[i] += (tempVV[j])[i];
 				}
-				//tempV[i];
 				if(debug2){
 					std::cout << "V[i]: " << V[i] << std::endl;
 				}
@@ -434,9 +406,8 @@ int main(int argc, char* argv[]) {
 				}
 			} else {
 				auto r = compute(c.m_1, c.m_2, c.key1, c.key2);
-				V[c.key1] += r;
+				V[c.key1] = V[c.key1] + r;
 				if(debug2 && c.key1 == 99){
-					// std::cout << "V[key1] " << V[c.key1] << " with key: " << c.key1 << "\t r: "<< r << std::endl;	
 					std::cout << "r: "<< r << std::endl;	
 				}
 			}	
@@ -444,8 +415,7 @@ int main(int argc, char* argv[]) {
 		if(debug2){
 			std::cout << "hello, i am the node " << myId << " and i am sending to V" << std::endl;
 		}
-		// MPI_Isend(V.data(), V.size(), MPI_FLOAT, 0, SEND_VECTOR_V, MPI_COMM_WORLD, &rq_send);
-		MPI_Send(V.data(), V.size(), MPI_FLOAT, 0, SEND_VECTOR_V, MPI_COMM_WORLD);
+		MPI_Send(V.data(), V.size(), MPI_DOUBLE, 0, SEND_VECTOR_V, MPI_COMM_WORLD);
 		
 		if(debug2){
 			for(int h=0; h<nkeys; h++){
